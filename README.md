@@ -6,4 +6,4 @@
 
 ## Windows
 
-    clang++ source/*.cpp -Iinclude -lglfw3 -lopengl32 -lglew32
+    clang++ -DIMGUI_USE_STB_SPRINTF imgui/*.cpp source/*.cpp -Iimgui -Isource/include -lglfw3 -lopengl32 -lglew32

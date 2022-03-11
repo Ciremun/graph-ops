@@ -34,7 +34,8 @@ File create_and_map_file(const char *path, flag_t access)
 
 File open_or_create_file(const char *path, flag_t access, int create)
 {
-    File f = {0};
+    File f;
+    memset(&f, 0, sizeof(File));
 #ifdef _WIN32
     DWORD dwCreationDisposition;
     if (create && !file_exists(path))

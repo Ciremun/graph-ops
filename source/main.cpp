@@ -1,14 +1,22 @@
-#include <stdio.h>
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+#include <GLES2/gl2.h>
+#endif
 
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include <stdio.h>
+#include <vector>
 
 #include "io.hpp"
-#include "sphere.h"
+#include "sphere.hpp"
 
 #define WIDTH 1024
 #define HEIGHT 768
@@ -21,26 +29,22 @@
     } while (0)
 
 int g_focused = 1;
-double g_cursor_xpos = .0f;
-double g_cursor_ypos = .0f;
 
-void window_size_callback(GLFWwindow* window, int width, int height)
+static void window_size_callback(GLFWwindow *window, int width, int height)
 {
     (void)window;
     glViewport(0, 0, width, height);
 }
 
-void window_focus_callback(GLFWwindow* window, int focused)
+static void window_focus_callback(GLFWwindow *window, int focused)
 {
     (void)window;
     g_focused = focused;
 }
 
-static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
+static void glfw_error_callback(int error, const char *description)
 {
-    (void)window;
-    g_cursor_xpos = xpos;
-    g_cursor_ypos = ypos;
+    fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
 void compile_shader(GLuint shader_id, void *shader_source)
@@ -107,12 +111,26 @@ compile_shader(fragment_shader_id, FRAGMENT_SHADER_SOURCE);
 
 int main()
 {
+    glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
         return 1;
 
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+    const char *glsl_version = "#version 100";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+#elif defined(__APPLE__)
+    const char *glsl_version = "#version 150";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#else
+    const char *glsl_version = "#version 130";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+#endif
 
     GLFWwindow *window =
         glfwCreateWindow(WIDTH, HEIGHT, "graph-ops", nullptr, nullptr);
@@ -135,30 +153,33 @@ int main()
 
     glfwSetWindowSizeCallback(window, window_size_callback);
     glfwSetWindowFocusCallback(window, window_focus_callback);
-    glfwSetCursorPosCallback(window, cursor_position_callback);
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    (void)io;
+    io.IniFilename = NULL;
+
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
 
     printf("%s\n", glGetString(GL_VERSION));
 
-    glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
     glDepthFunc(GL_LESS);
 
-    GLuint vertex_array_id;
-    glGenVertexArrays(1, &vertex_array_id);
-    glBindVertexArray(vertex_array_id);
-
     GLuint program_id = load_shaders();
-
     GLuint matrix_id = glGetUniformLocation(program_id, "MVP");
     GLuint time_id = glGetUniformLocation(program_id, "u_time");
+    GLuint color_id = glGetUniformLocation(program_id, "u_color");
 
-    auto projection =
-        glm::perspective(glm::radians(90.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-    auto model = glm::mat4(1.0f);
-
+    auto projection = glm::perspective(glm::radians(90.0f), 4.0f / 3.0f, 0.1f, 100.0f);
     auto position = glm::vec3(0.0, 2.0, 3.5);
 
     float horizontal_angle = 3.15f;
@@ -169,46 +190,10 @@ int main()
     double dt;
     double last_frame = glfwGetTime();
 
-    static const GLfloat g_vertex_buffer_data[] = {
-        -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f,
-        1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
-        1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f,
-        1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f,
-        1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f,
-        1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f,
-        1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f};
-
-    GLuint vertex_buffer;
-    glGenBuffers(1, &vertex_buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data),
-                 g_vertex_buffer_data, GL_STATIC_DRAW);
-
-    // create a sphere with default params; radius=1, sectors=36, stacks=18,
-    // smooth=true
-    Sphere sphere(1, 64, 32, true);
-
-    // copy interleaved vertex data (V/N/T) to VBO
-    GLuint vboId;
-    glGenBuffers(1, &vboId);
-    glBindBuffer(GL_ARRAY_BUFFER, vboId);           // for vertex data
-    glBufferData(GL_ARRAY_BUFFER,                   // target
-                 sphere.getInterleavedVertexSize(), // data size, # of bytes
-                 sphere.getInterleavedVertices(),   // ptr to vertex data
-                 GL_STATIC_DRAW);                   // usage
-
-    // copy index data to VBO
-    GLuint iboId;
-    glGenBuffers(1, &iboId);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboId); // for index data
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER,         // target
-                 sphere.getIndexSize(),           // data size, # of bytes
-                 sphere.getIndices(),             // ptr to index data
-                 GL_STATIC_DRAW);                 // usage
+    std::vector<Sphere> spheres = {
+        {matrix_id, color_id, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), 1.0f, 64, 32},
+        {matrix_id, color_id, glm::vec4(0.0f, 1.0f, 0.0f, 0.5f), 1.0f, 64, 32},
+    };
 
     while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
            !glfwWindowShouldClose(window))
@@ -236,13 +221,13 @@ int main()
 
         if (g_focused)
         {
-            double xpos, ypos;
-            glfwGetCursorPos(window, &xpos, &ypos);
+            // double xpos, ypos;
+            // glfwGetCursorPos(window, &xpos, &ypos);
 
-            horizontal_angle += mouse_speed * dt * ((float)WIDTH / 2.0f - xpos);
-            vertical_angle += mouse_speed * dt * ((float)HEIGHT / 2.0f - ypos);
+            // horizontal_angle += mouse_speed * dt * ((float)WIDTH / 2.0f - xpos);
+            // vertical_angle += mouse_speed * dt * ((float)HEIGHT / 2.0f - ypos);
 
-            auto right = glm::vec3(glm::sin(horizontal_angle - 3.14f / 2.0), 0.0f,
+            auto right = glm::vec3(glm::sin(horizontal_angle - 3.14 / 2.0), 0.0f,
                                    glm::cos(horizontal_angle - 3.14 / 2.0));
 
             if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
@@ -253,60 +238,48 @@ int main()
                 position = position + right * static_cast<float>(dt) * speed;
             if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
                 position = position - right * static_cast<float>(dt) * speed;
-            glfwSetCursorPos(window, (float)WIDTH / 2.0f, (float)HEIGHT / 2.0f);
+
+            // glfwSetCursorPos(window, (float)WIDTH / 2.0f, (float)HEIGHT / 2.0f);
         }
 
-        auto view = glm::lookAt(position, position + direction,
-                                glm::vec3(0.0f, 1.0f, 0.0f));
+        auto view = glm::lookAt(position, position + direction, glm::vec3(0.0f, 1.0f, 0.0f));
         auto view_projection = projection * view;
-        auto mvp = view_projection * model;
 
-        static const auto right_model =
-            glm::scale(glm::translate(model, glm::vec3(2.0, 0.0, 0.0)),
-                       glm::vec3(0.3, 0.3, 0.3));
-
-        auto mvp_2 = view_projection * right_model;
-        glUniformMatrix4fv(matrix_id, 1, GL_FALSE, &mvp_2[0][0]);
         glUniform1f(time_id, current_frame);
 
-        glEnableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
+        for (const auto &sphere : spheres)
+            sphere.draw(view_projection);
 
-        glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
 
-        glDisableVertexAttribArray(0);
+        ImGui::Begin("graph-ops");
 
-        glUniformMatrix4fv(matrix_id, 1, GL_FALSE, &mvp[0][0]);
+        for (size_t i = 0; i < spheres.size(); ++i)
+        {
+            ImGui::PushID(i);
+            ImGui::Text("Sphere %llu", i + 1);
+            ImGui::SliderFloat("X", &spheres[i].model[3][0], -4.0f, 4.0f);
+            ImGui::SliderFloat("Y", &spheres[i].model[3][1], -4.0f, 4.0f);
+            ImGui::SliderFloat("Z", &spheres[i].model[3][2], -4.0f, 4.0f);
+            ImGui::PopID();
+        }
 
-        // bind VBOs
-        glBindBuffer(GL_ARRAY_BUFFER, vboId);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboId);
+        ImGui::End();
 
-        // activate attrib arrays
-        glEnableVertexAttribArray(0);
-
-        // set attrib arrays with stride and offset
-        int stride = sphere.getInterleavedStride(); // should be 32 bytes
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, stride, (void *)0);
-
-        // draw a sphere with VBO
-        glDrawElements(GL_TRIANGLES,           // primitive type
-                       sphere.getIndexCount(), // # of indices
-                       GL_UNSIGNED_INT,        // data type
-                       (void *)0);             // offset to indices
-
-        // deactivate attrib arrays
-        glDisableVertexAttribArray(0);
-
-        // unbind VBOs
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+    glfwDestroyWindow(window);
     glfwTerminate();
 
     return 0;
