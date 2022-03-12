@@ -16,7 +16,7 @@
 CXX = em++
 WEB_DIR = docs
 EXE = $(WEB_DIR)/index.html
-SOURCES = source/backends/impl_emscripten.cpp source/common/io.cpp source/common/sphere.cpp source/common/shader.cpp
+SOURCES = src/backends/impl_emscripten.cpp src/common/io.cpp src/common/sphere.cpp src/common/shader.cpp
 SOURCES += imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp imgui/imgui_widgets.cpp imgui/backends/imgui_impl_sdl.cpp imgui/backends/imgui_impl_opengl3.cpp
 OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
 UNAME_S := $(shell uname -s)
@@ -47,26 +47,26 @@ LDFLAGS += -s NO_FILESYSTEM=1
 CPPFLAGS += -DIMGUI_DISABLE_FILE_FUNCTIONS
 endif
 ifeq ($(USE_FILE_SYSTEM), 1)
-LDFLAGS += --no-heap-copy --preload-file source/shaders/frag.glsl --preload-file source/shaders/vert.glsl --preload-file imgui/fonts/Roboto-Medium.ttf
+LDFLAGS += --no-heap-copy --preload-file src/shaders/frag.glsl --preload-file src/shaders/vert.glsl --preload-file imgui/fonts/Roboto-Medium.ttf
 endif
 
 ##---------------------------------------------------------------------
 ## FINAL BUILD FLAGS
 ##---------------------------------------------------------------------
 
-CPPFLAGS += -Isource/include -Iimgui -Iimgui/backends
+CPPFLAGS += -Isrc/include -Iimgui -Iimgui/backends
 #CPPFLAGS += -g
 CPPFLAGS += -Wall -Wformat -Os $(EMS)
-LDFLAGS += --shell-file source/shell_minimal.html $(EMS)
+LDFLAGS += --shell-file src/shell_minimal.html $(EMS)
 
 ##---------------------------------------------------------------------
 ## BUILD RULES
 ##---------------------------------------------------------------------
 
-%.o:source/common/%.cpp
+%.o:src/common/%.cpp
 	$(CXX) $(CPPFLAGS) -c -o $@ $<
 
-%.o:source/backends/%.cpp
+%.o:src/backends/%.cpp
 	$(CXX) $(CPPFLAGS) -c -o $@ $<
 
 %.o:imgui/%.cpp

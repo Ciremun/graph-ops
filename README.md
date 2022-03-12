@@ -1,9 +1,19 @@
 # graph-ops
 
-## Linux
+## GLFW
 
-    # TODO
+### APT
 
-## Windows
+    sudo apt install libglfw3 libglfw3-dev libglew-dev
 
-    clang++ -DIMGUI_USE_STB_SPRINTF imgui/*.cpp imgui/backends/imgui_impl_glfw.cpp imgui/backends/imgui_impl_opengl3.cpp source/backends/impl_glfw.cpp source/common/*.cpp -Iimgui -Iimgui/backends -Isource/include -lglfw3 -lopengl32 -lglew32
+### MSYS2
+
+    pacman -S mingw-w64-x86_64-glfw mingw-w64-x86_64-glew
+
+### Build
+
+    ./build.sh run
+
+## Emscripten
+
+    make

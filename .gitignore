@@ -2,6 +2,11 @@
 web/
 emsdk/
 
+graph-ops
+
+# Nobuild
+*.old
+
 # Prerequisites
 *.d
 

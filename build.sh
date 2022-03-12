@@ -1,0 +1,1 @@
+([ -f ./nobuild ] || c++ src/nobuild.cpp -onobuild) && ./nobuild $@
