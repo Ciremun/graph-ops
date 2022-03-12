@@ -14,7 +14,7 @@
 # All three are needed to run the demo.
 
 CXX = em++
-WEB_DIR = .
+WEB_DIR = docs
 EXE = $(WEB_DIR)/index.html
 SOURCES = source/backends/impl_emscripten.cpp source/common/io.cpp source/common/sphere.cpp source/common/shader.cpp
 SOURCES += imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp imgui/imgui_widgets.cpp imgui/backends/imgui_impl_sdl.cpp imgui/backends/imgui_impl_opengl3.cpp
@@ -57,7 +57,7 @@ endif
 CPPFLAGS += -Isource/include -Iimgui -Iimgui/backends
 #CPPFLAGS += -g
 CPPFLAGS += -Wall -Wformat -Os $(EMS)
-LDFLAGS += --shell-file shell_minimal.html $(EMS)
+LDFLAGS += --shell-file source/shell_minimal.html $(EMS)
 
 ##---------------------------------------------------------------------
 ## BUILD RULES

@@ -38,7 +38,7 @@ var Module = typeof Module != 'undefined' ? Module : {};
         // web worker
         PACKAGE_PATH = encodeURIComponent(location.pathname.toString().substring(0, location.pathname.toString().lastIndexOf('/')) + '/');
       }
-      var PACKAGE_NAME = 'index.data';
+      var PACKAGE_NAME = 'docs/index.data';
       var REMOTE_PACKAGE_BASE = 'index.data';
       if (typeof Module['locateFilePackage'] === 'function' && !Module['locateFile']) {
         Module['locateFile'] = Module['locateFilePackage'];
@@ -175,10 +175,10 @@ Module['FS_createPath']("/imgui", "fonts", true, true);
           var files = metadata['files'];
           for (var i = 0; i < files.length; ++i) {
             DataRequest.prototype.requests[files[i].filename].onload();
-          }          Module['removeRunDependency']('datafile_index.data');
+          }          Module['removeRunDependency']('datafile_docs/index.data');
 
       };
-      Module['addRunDependency']('datafile_index.data');
+      Module['addRunDependency']('datafile_docs/index.data');
 
       if (!Module.preloadResults) Module.preloadResults = {};
 
@@ -199,7 +199,7 @@ Module['FS_createPath']("/imgui", "fonts", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/source/shaders/frag.glsl", "start": 0, "end": 153}, {"filename": "/source/shaders/vert.glsl", "start": 153, "end": 392}, {"filename": "/imgui/fonts/Roboto-Medium.ttf", "start": 392, "end": 162980}], "remote_package_size": 162980, "package_uuid": "22bfd5f1-fe75-43f4-ae13-2a8743a5dff9"});
+    loadPackage({"files": [{"filename": "/source/shaders/frag.glsl", "start": 0, "end": 153}, {"filename": "/source/shaders/vert.glsl", "start": 153, "end": 392}, {"filename": "/imgui/fonts/Roboto-Medium.ttf", "start": 392, "end": 162980}], "remote_package_size": 162980, "package_uuid": "5c06d82b-f9ac-480f-811d-2d3140769314"});
 
   })();
 
