@@ -256,6 +256,9 @@ int main()
 
         ImGui::Begin("graph-ops");
 
+        if (ImGui::Button("Create Sphere"))
+            spheres.push_back(Sphere(matrix_id, color_id, glm::vec4(1.0f, 1.0f, 0.0f, 0.7f), 1.0f, 64, 32));
+
         for (size_t i = 0; i < spheres.size(); ++i)
         {
             ImGui::PushID(i);
@@ -263,8 +266,11 @@ int main()
             ImGui::SliderFloat("X", &spheres[i].model[3][0], -4.0f, 4.0f);
             ImGui::SliderFloat("Y", &spheres[i].model[3][1], -4.0f, 4.0f);
             ImGui::SliderFloat("Z", &spheres[i].model[3][2], -4.0f, 4.0f);
+            ImGui::ColorPicker4("Color", (float *)&spheres[i].color);
             ImGui::PopID();
         }
+
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
         ImGui::End();
 
