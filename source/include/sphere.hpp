@@ -11,8 +11,12 @@
 
 #pragma once
 
+#ifndef __EMSCRIPTEN__
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#else
+#include <SDL_opengles2.h>
+#endif // __EMSCRIPTEN__
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
