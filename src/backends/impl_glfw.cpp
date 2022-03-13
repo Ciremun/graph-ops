@@ -19,15 +19,17 @@
 #include "sphere.hpp"
 #include "shader.hpp"
 
-#define WIDTH 1024
-#define HEIGHT 768
-
+int width = 1024;
+int height = 768;
 int g_focused = 1;
+
+glm::highp_mat4 projection;
 
 static void window_size_callback(GLFWwindow *window, int width, int height)
 {
     (void)window;
     glViewport(0, 0, width, height);
+    projection = glm::perspective(glm::radians(90.0f), (float)width / (float)height, 0.1f, 100.0f);
 }
 
 static void window_focus_callback(GLFWwindow *window, int focused)
@@ -65,7 +67,7 @@ int main()
 #endif
 
     GLFWwindow *window =
-        glfwCreateWindow(WIDTH, HEIGHT, "graph-ops", nullptr, nullptr);
+        glfwCreateWindow(width, height, "graph-ops", nullptr, nullptr);
 
     if (!window)
     {
@@ -111,13 +113,13 @@ int main()
     GLuint time_id = glGetUniformLocation(program_id, "u_time");
     GLuint color_id = glGetUniformLocation(program_id, "u_color");
 
-    auto projection = glm::perspective(glm::radians(90.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+    // set projection
+    window_size_callback(window, width, height);
     auto position = glm::vec3(0.0, 2.0, 3.5);
 
     float horizontal_angle = 3.15f;
     float vertical_angle = -0.63f;
     float speed = 5.0f;
-    float mouse_speed = 0.1f;
 
     double dt;
     double last_frame = glfwGetTime();
