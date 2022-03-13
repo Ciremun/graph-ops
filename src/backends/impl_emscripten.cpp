@@ -17,6 +17,10 @@ EM_JS(int, canvas_get_height, (), {
     return window.canvas.height;
 });
 
+EM_JS(int, is_mobile, (), {
+    return navigator.userAgentData.mobile;
+});
+
 SDL_Window *g_Window = NULL;
 SDL_GLContext g_GLContext = NULL;
 
@@ -26,8 +30,11 @@ static void main_loop(void *);
 
 static void window_size_callback(int width, int height)
 {
-    // not sure why we have to multiply viewport dim by 2
-    glViewport(0, 0, width * 2, height * 2);
+    if (is_mobile())
+        // not sure why
+        glViewport(0, 0, width * 2, height * 2);
+    else
+        glViewport(0, 0, width, height);
     projection = glm::perspective(glm::radians(90.0f), (float)width / (float)height, 0.1f, 100.0f);
 }
 
