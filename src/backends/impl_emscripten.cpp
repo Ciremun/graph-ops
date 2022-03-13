@@ -6,8 +6,16 @@
 #include <emscripten.h>
 #include <stdio.h>
 
-#include "sphere.hpp"
 #include "shader.hpp"
+#include "sphere.hpp"
+
+EM_JS(int, canvas_get_width, (), {
+    return window.canvas.width;
+});
+
+EM_JS(int, canvas_get_height, (), {
+    return window.canvas.height;
+});
 
 SDL_Window *g_Window = NULL;
 SDL_GLContext g_GLContext = NULL;
@@ -15,6 +23,12 @@ SDL_GLContext g_GLContext = NULL;
 glm::highp_mat4 projection;
 
 static void main_loop(void *);
+
+static void window_size_callback(int width, int height)
+{
+    glViewport(0, 0, width, height);
+    projection = glm::perspective(glm::radians(90.0f), (float)width / (float)height, 0.1f, 100.0f);
+}
 
 int main(int, char **)
 {
@@ -24,7 +38,7 @@ int main(int, char **)
         return -1;
     }
 
-    const char* glsl_version = "#version 300 es";
+    const char *glsl_version = "#version 300 es";
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
@@ -36,7 +50,9 @@ int main(int, char **)
     SDL_DisplayMode current;
     SDL_GetCurrentDisplayMode(0, &current);
     SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-    g_Window = SDL_CreateWindow("Dear ImGui Emscripten example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
+    int width = canvas_get_width();
+    int height = canvas_get_height();
+    g_Window = SDL_CreateWindow("graph-ops", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, window_flags);
     g_GLContext = SDL_GL_CreateContext(g_Window);
     if (!g_GLContext)
     {
@@ -74,7 +90,7 @@ int main(int, char **)
 
     glDepthFunc(GL_LESS);
 
-    glm::perspective(glm::radians(90.0f), 16.0f / 9.0f, 0.1f, 100.0f);
+    window_size_callback(width, height);
 
     emscripten_set_main_loop_arg(main_loop, NULL, 0, true);
 }
@@ -104,7 +120,7 @@ static void main_loop(void *arg)
     while (SDL_PollEvent(&event))
     {
         if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
-            projection = glm::perspective(glm::radians(90.0f), (float)event.window.data1 / (float)event.window.data2, 0.1f, 100.0f);
+            window_size_callback(event.window.data1, event.window.data2);
         ImGui_ImplSDL2_ProcessEvent(&event);
     }
 
