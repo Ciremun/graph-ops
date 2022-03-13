@@ -199,7 +199,7 @@ Module['FS_createPath']("/imgui", "fonts", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/src/shaders/frag.glsl", "start": 0, "end": 153}, {"filename": "/src/shaders/vert.glsl", "start": 153, "end": 392}, {"filename": "/imgui/fonts/Roboto-Medium.ttf", "start": 392, "end": 162980}], "remote_package_size": 162980, "package_uuid": "053fd7df-cf01-4d77-b018-6a4a5e265c65"});
+    loadPackage({"files": [{"filename": "/src/shaders/frag.glsl", "start": 0, "end": 153}, {"filename": "/src/shaders/vert.glsl", "start": 153, "end": 392}, {"filename": "/imgui/fonts/Roboto-Medium.ttf", "start": 392, "end": 162980}], "remote_package_size": 162980, "package_uuid": "b9097d2c-2fb0-4b64-8f3c-f7af1eb96c5e"});
 
   })();
 

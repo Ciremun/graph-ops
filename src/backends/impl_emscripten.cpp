@@ -26,7 +26,8 @@ static void main_loop(void *);
 
 static void window_size_callback(int width, int height)
 {
-    glViewport(0, 0, width, height);
+    // not sure why we have to multiply viewport dim by 2
+    glViewport(0, 0, width * 2, height * 2);
     projection = glm::perspective(glm::radians(90.0f), (float)width / (float)height, 0.1f, 100.0f);
 }
 
@@ -41,7 +42,7 @@ int main(int, char **)
     const char *glsl_version = "#version 300 es";
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -166,7 +167,6 @@ static void main_loop(void *arg)
 
     ImGui::Render();
     SDL_GL_MakeCurrent(g_Window, g_GLContext);
-    glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     SDL_GL_SwapWindow(g_Window);
 }
