@@ -12,6 +12,8 @@
 SDL_Window *g_Window = NULL;
 SDL_GLContext g_GLContext = NULL;
 
+glm::highp_mat4 projection;
+
 static void main_loop(void *);
 
 int main(int, char **)
@@ -72,6 +74,8 @@ int main(int, char **)
 
     glDepthFunc(GL_LESS);
 
+    glm::perspective(glm::radians(90.0f), 16.0f / 9.0f, 0.1f, 100.0f);
+
     emscripten_set_main_loop_arg(main_loop, NULL, 0, true);
 }
 
@@ -82,7 +86,6 @@ static void main_loop(void *arg)
     static GLuint time_id = glGetUniformLocation(program_id, "u_time");
     static GLuint color_id = glGetUniformLocation(program_id, "u_color");
 
-    static auto projection = glm::perspective(glm::radians(90.0f), 4.0f / 3.0f, 0.1f, 100.0f);
     static auto position = glm::vec3(0.0, 2.0, 3.5);
 
     static float horizontal_angle = 3.15f;
@@ -99,7 +102,11 @@ static void main_loop(void *arg)
 
     SDL_Event event;
     while (SDL_PollEvent(&event))
+    {
+        if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+            projection = glm::perspective(glm::radians(90.0f), (float)event.window.data1 / (float)event.window.data2, 0.1f, 100.0f);
         ImGui_ImplSDL2_ProcessEvent(&event);
+    }
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(program_id);
