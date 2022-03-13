@@ -199,7 +199,7 @@ Module['FS_createPath']("/imgui", "fonts", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/src/shaders/frag.glsl", "start": 0, "end": 153}, {"filename": "/src/shaders/vert.glsl", "start": 153, "end": 392}, {"filename": "/imgui/fonts/Roboto-Medium.ttf", "start": 392, "end": 162980}], "remote_package_size": 162980, "package_uuid": "0bc63c73-8a7f-490d-993b-72d1fdc49b2a"});
+    loadPackage({"files": [{"filename": "/src/shaders/frag.glsl", "start": 0, "end": 153}, {"filename": "/src/shaders/vert.glsl", "start": 153, "end": 392}, {"filename": "/imgui/fonts/Roboto-Medium.ttf", "start": 392, "end": 162980}], "remote_package_size": 162980, "package_uuid": "e38364cd-41b8-47e2-b0e0-fa1039be1dcf"});
 
   })();
 
@@ -1922,7 +1922,7 @@ var ASM_CONSTS = {
 };
 function canvas_get_height(){ return window.canvas.height; }
 function canvas_get_width(){ return window.canvas.width; }
-function is_mobile(){ return navigator.userAgentData.mobile; }
+function mobile(){ return navigator.userAgentData.mobile; }
 
 
 
@@ -10654,7 +10654,7 @@ var asmLibraryArg = {
   "glUseProgram": _glUseProgram,
   "glVertexAttribPointer": _glVertexAttribPointer,
   "glViewport": _glViewport,
-  "is_mobile": is_mobile,
+  "mobile": mobile,
   "setTempRet0": _setTempRet0
 };
 var asm = createWasm();
