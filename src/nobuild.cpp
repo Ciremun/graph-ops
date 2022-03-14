@@ -1270,7 +1270,7 @@ char *shift_args(int *argc, char ***argv)
 
 #define SOURCES "imgui/imgui.cpp", "imgui/imgui_draw.cpp", "imgui/imgui_tables.cpp", "imgui/imgui_widgets.cpp", \
                 "imgui/backends/imgui_impl_glfw.cpp", "imgui/backends/imgui_impl_opengl3.cpp", \
-                "src/common/io.cpp", "src/common/shader.cpp", "src/common/sphere.cpp", \
+                "src/common/io.cpp", "src/common/shader.cpp", "src/common/sphere.cpp", "src/common/update.cpp", \
                 "src/backends/impl_glfw.cpp"
 
 #define INCLUDES "-Iimgui", "-Iimgui/backends", "-Isrc/include"

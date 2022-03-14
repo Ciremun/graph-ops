@@ -1,13 +1,13 @@
-#include "imgui.h"
-#include "imgui_impl_opengl3.h"
 #include "imgui_impl_sdl.h"
 #include <SDL.h>
 #include <SDL_opengles2.h>
 #include <emscripten.h>
 #include <stdio.h>
 
+#include "impl_base.hpp"
 #include "shader.hpp"
 #include "sphere.hpp"
+#include "update.hpp"
 
 EM_JS(int, canvas_get_width, (), {
     return window.canvas.width;
@@ -25,6 +25,12 @@ SDL_Window *g_Window = NULL;
 SDL_GLContext g_GLContext = NULL;
 
 glm::highp_mat4 projection;
+
+void process_input(glm::vec3 const &direction, double dt)
+{
+    (void)direction;
+    (void)dt;
+}
 
 static void main_loop(void *);
 
@@ -48,7 +54,6 @@ int main(int, char **)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
@@ -69,8 +74,6 @@ int main(int, char **)
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
-    (void)io;
-
     io.IniFilename = NULL;
 
     ImGui::StyleColorsDark();
@@ -86,15 +89,7 @@ int main(int, char **)
     io.Fonts->AddFontFromFileTTF("imgui/fonts/Roboto-Medium.ttf", 16.0f);
 #endif
 
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-
-    glDepthFunc(GL_LESS);
-
+    graph_ops_init();
     window_size_callback(width, height);
 
     emscripten_set_main_loop_arg(main_loop, NULL, 0, true);
@@ -102,23 +97,6 @@ int main(int, char **)
 
 static void main_loop(void *arg)
 {
-    static GLuint program_id = load_shaders();
-    static GLuint matrix_id = glGetUniformLocation(program_id, "MVP");
-    static GLuint time_id = glGetUniformLocation(program_id, "u_time");
-    static GLuint color_id = glGetUniformLocation(program_id, "u_color");
-
-    static auto position = glm::vec3(0.0, 2.0, 3.5);
-
-    static float horizontal_angle = 3.15f;
-    static float vertical_angle = -0.63f;
-    static float speed = 5.0f;
-    static float mouse_speed = 0.1f;
-
-    static std::vector<Sphere> spheres = {
-        {matrix_id, color_id, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), 1.0f, 64, 32},
-    };
-
-    ImGuiIO &io = ImGui::GetIO();
     IM_UNUSED(arg);
 
     SDL_Event event;
@@ -129,45 +107,13 @@ static void main_loop(void *arg)
         ImGui_ImplSDL2_ProcessEvent(&event);
     }
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glUseProgram(program_id);
-
-    auto direction =
-        glm::vec3(glm::cos(vertical_angle) * glm::sin(horizontal_angle),
-                  glm::sin(vertical_angle),
-                  glm::cos(vertical_angle) * glm::cos(horizontal_angle));
-
-    auto view = glm::lookAt(position, position + direction, glm::vec3(0.0f, 1.0f, 0.0f));
-    auto view_projection = projection * view;
-
-    glUniform1f(time_id, SDL_GetTicks64() / 1000.0f);
-
-    for (const auto &sphere : spheres)
-        sphere.draw(view_projection);
+    graph_ops_update(SDL_GetTicks64() / 1000.0f, NULL);
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::Begin("graph-ops");
-
-    if (ImGui::Button("Create Sphere"))
-        spheres.push_back(Sphere(matrix_id, color_id, glm::vec4(1.0f, 1.0f, 0.0f, 0.7f), 1.0f, 64, 32));
-
-    for (size_t i = 0; i < spheres.size(); ++i)
-    {
-        ImGui::PushID(i);
-        ImGui::Text("Sphere %llu", i + 1);
-        ImGui::SliderFloat("X", &spheres[i].model[3][0], -4.0f, 4.0f);
-        ImGui::SliderFloat("Y", &spheres[i].model[3][1], -4.0f, 4.0f);
-        ImGui::SliderFloat("Z", &spheres[i].model[3][2], -4.0f, 4.0f);
-        ImGui::ColorPicker4("Color", (float *)&spheres[i].color);
-        ImGui::PopID();
-    }
-
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
-    ImGui::End();
+    imgui_update();
 
     ImGui::Render();
     SDL_GL_MakeCurrent(g_Window, g_GLContext);
