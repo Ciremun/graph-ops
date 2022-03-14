@@ -199,7 +199,7 @@ Module['FS_createPath']("/imgui", "fonts", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/src/shaders/frag.glsl", "start": 0, "end": 153}, {"filename": "/src/shaders/vert.glsl", "start": 153, "end": 392}, {"filename": "/imgui/fonts/Roboto-Medium.ttf", "start": 392, "end": 162980}], "remote_package_size": 162980, "package_uuid": "917a7a6c-f1ac-4180-9ab5-273e352cb463"});
+    loadPackage({"files": [{"filename": "/src/shaders/frag.glsl", "start": 0, "end": 153}, {"filename": "/src/shaders/vert.glsl", "start": 153, "end": 392}, {"filename": "/imgui/fonts/Roboto-Medium.ttf", "start": 392, "end": 162980}], "remote_package_size": 162980, "package_uuid": "11dc1202-273d-492a-b7ed-cf12f2173336"});
 
   })();
 
@@ -9725,6 +9725,10 @@ function mobile(){ return navigator.userAgentData.mobile; }
 
   function _glDepthFunc(x0) { GLctx['depthFunc'](x0) }
 
+  function _glDepthMask(flag) {
+      GLctx.depthMask(!!flag);
+    }
+
   function _glDetachShader(program, shader) {
       GLctx.detachShader(GL.programs[program], GL.shaders[shader]);
     }
@@ -10625,6 +10629,7 @@ var asmLibraryArg = {
   "glDeleteShader": _glDeleteShader,
   "glDeleteVertexArrays": _glDeleteVertexArrays,
   "glDepthFunc": _glDepthFunc,
+  "glDepthMask": _glDepthMask,
   "glDetachShader": _glDetachShader,
   "glDisable": _glDisable,
   "glDisableVertexAttribArray": _glDisableVertexAttribArray,

@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <iterator>
 #include <vector>
 
 #include "impl_base.hpp"
@@ -17,7 +19,14 @@ float speed = 5.0f;
 float mouse_speed = 0.1f;
 
 glm::highp_mat4 projection;
-std::vector<Sphere> spheres;
+std::vector<Sphere*> spheres;
+std::vector<Sphere*> spheres_imgui_draw_order;
+std::vector<Sphere*>::iterator spheres_mid_it;
+
+void sort_spheres()
+{
+    spheres_mid_it = std::partition(spheres.begin(), spheres.end(), [](Sphere *s){ return s->color.a == 1.0f; });
+}
 
 void graph_ops_init()
 {
@@ -37,9 +46,12 @@ void graph_ops_init()
     color_id = glGetUniformLocation(program_id, "u_color");
 
     spheres = {
-        {matrix_id, color_id, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), 1.0f, 64, 32},
-        {matrix_id, color_id, glm::vec4(0.0f, 1.0f, 0.0f, 0.77f), 1.0f, 64, 32},
+        new Sphere(matrix_id, color_id, glm::vec4(0.0f, 1.0f, 0.0f, 0.77f), 1.0f, 64, 32),
     };
+
+    sort_spheres();
+
+    spheres_imgui_draw_order = spheres;
 }
 
 void graph_ops_update(double ticks, double dt)
@@ -59,8 +71,22 @@ void graph_ops_update(double ticks, double dt)
     auto view = glm::lookAt(position, position + direction, glm::vec3(0.0f, 1.0f, 0.0f));
     auto view_projection = projection * view;
 
-    for (const auto &sphere : spheres)
-        sphere.draw(view_projection);
+    for (auto sphere_it = std::begin(spheres); sphere_it != spheres_mid_it; ++sphere_it)
+    {
+        auto sphere = *sphere_it;
+        sphere->draw(view_projection);
+    }
+
+    if (spheres_mid_it != std::end(spheres))
+    {
+        glDepthMask(GL_FALSE);
+        for (auto sphere_it = spheres_mid_it; sphere_it != std::end(spheres); ++sphere_it)
+        {
+            auto sphere = *sphere_it;
+            sphere->draw(view_projection);
+        }
+        glDepthMask(GL_TRUE);
+    }
 }
 
 void imgui_update()
@@ -68,16 +94,24 @@ void imgui_update()
     ImGui::Begin("graph-ops");
 
     if (ImGui::Button("Create Sphere"))
-        spheres.push_back(Sphere(matrix_id, color_id, glm::vec4(1.0f, 1.0f, 0.0f, 0.7f), 1.0f, 64, 32));
-
-    for (size_t i = 0; i < spheres.size(); ++i)
     {
+        Sphere *sphere = new Sphere(matrix_id, color_id, glm::vec4(1.0f, 1.0f, 0.0f, 0.7f), 1.0f, 64, 32);
+        spheres_imgui_draw_order.push_back(sphere);
+        spheres.push_back(sphere);
+        sort_spheres();
+    }
+
+    for (size_t i = 0; i < spheres_imgui_draw_order.size(); ++i)
+    {
+        auto sphere = spheres_imgui_draw_order[i];
+        auto prev_alpha = sphere->color.a;
         ImGui::PushID(i);
         ImGui::Text("Sphere %zu", i + 1);
-        ImGui::SliderFloat("X", &spheres[i].model[3].x, -4.0f, 4.0f);
-        ImGui::SliderFloat("Y", &spheres[i].model[3].y, -4.0f, 4.0f);
-        ImGui::SliderFloat("Z", &spheres[i].model[3].z, -4.0f, 4.0f);
-        ImGui::ColorPicker4("Color", (float *)&spheres[i].color);
+        ImGui::SliderFloat("X", &sphere->model[3].x, -4.0f, 4.0f);
+        ImGui::SliderFloat("Y", &sphere->model[3].y, -4.0f, 4.0f);
+        ImGui::SliderFloat("Z", &sphere->model[3].z, -4.0f, 4.0f);
+        if (ImGui::ColorPicker4("Color", (float *)&sphere->color) && sphere->color.a != prev_alpha)
+            sort_spheres();
         ImGui::PopID();
     }
 
