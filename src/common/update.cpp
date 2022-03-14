@@ -16,9 +16,8 @@ float vertical_angle = -0.63f;
 float speed = 5.0f;
 float mouse_speed = 0.1f;
 
+glm::highp_mat4 projection;
 std::vector<Sphere> spheres;
-
-extern glm::highp_mat4 projection;
 
 void graph_ops_init()
 {

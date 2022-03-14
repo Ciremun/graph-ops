@@ -14,7 +14,6 @@ int height = 768;
 int g_focused = 1;
 
 GLFWwindow *window;
-glm::highp_mat4 projection;
 
 extern GLuint program_id;
 

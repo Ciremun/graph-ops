@@ -24,8 +24,6 @@ EM_JS(int, mobile, (), {
 SDL_Window *g_Window = NULL;
 SDL_GLContext g_GLContext = NULL;
 
-glm::highp_mat4 projection;
-
 void process_input(glm::vec3 const &direction, double dt)
 {
     (void)direction;
