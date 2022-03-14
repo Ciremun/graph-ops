@@ -72,9 +72,9 @@ void imgui_update()
     {
         ImGui::PushID(i);
         ImGui::Text("Sphere %zu", i + 1);
-        ImGui::SliderFloat("X", &spheres[i].model[3][0], -4.0f, 4.0f);
-        ImGui::SliderFloat("Y", &spheres[i].model[3][1], -4.0f, 4.0f);
-        ImGui::SliderFloat("Z", &spheres[i].model[3][2], -4.0f, 4.0f);
+        ImGui::SliderFloat("X", &spheres[i].model[3].x, -4.0f, 4.0f);
+        ImGui::SliderFloat("Y", &spheres[i].model[3].y, -4.0f, 4.0f);
+        ImGui::SliderFloat("Z", &spheres[i].model[3].z, -4.0f, 4.0f);
         ImGui::ColorPicker4("Color", (float *)&spheres[i].color);
         ImGui::PopID();
     }
