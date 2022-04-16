@@ -14,7 +14,6 @@ graph-ops
 *.slo
 *.lo
 *.o
-*.obj
 
 # Precompiled Headers
 *.gch
