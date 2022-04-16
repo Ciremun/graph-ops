@@ -6,7 +6,6 @@
 
 #include "impl_base.hpp"
 #include "shader.hpp"
-#include "sphere.hpp"
 #include "update.hpp"
 
 EM_JS(int, canvas_get_width, (), {
@@ -84,7 +83,7 @@ int main(int, char **)
     io.Fonts->AddFontDefault(&font_cfg);
 
 #ifndef IMGUI_DISABLE_FILE_FUNCTIONS
-    io.Fonts->AddFontFromFileTTF("imgui/fonts/Roboto-Medium.ttf", 16.0f);
+    io.Fonts->AddFontFromFileTTF("source/imgui/fonts/Roboto-Medium.ttf", 16.0f);
 #endif
 
     graph_ops_init();

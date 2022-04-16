@@ -12,5 +12,6 @@
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 void process_input(glm::vec3 const &direction, double dt);

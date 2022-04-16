@@ -6,7 +6,6 @@
 #include "impl_base.hpp"
 #include "io.hpp"
 #include "shader.hpp"
-#include "sphere.hpp"
 #include "update.hpp"
 
 int width = 1024;
@@ -39,11 +38,11 @@ void process_input(glm::vec3 const &direction, double dt)
 {
     if (g_focused)
     {
-        // double xpos, ypos;
-        // glfwGetCursorPos(window, &xpos, &ypos);
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
 
-        // horizontal_angle += mouse_speed * dt * ((float)WIDTH / 2.0f - xpos);
-        // vertical_angle += mouse_speed * dt * ((float)HEIGHT / 2.0f - ypos);
+        horizontal_angle += mouse_speed * dt * ((float)width / 2.0f - xpos);
+        vertical_angle += mouse_speed * dt * ((float)height / 2.0f - ypos);
 
         auto right = glm::vec3(glm::sin(horizontal_angle - 3.14 / 2.0), 0.0f,
                                glm::cos(horizontal_angle - 3.14 / 2.0));
@@ -57,7 +56,7 @@ void process_input(glm::vec3 const &direction, double dt)
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
             position = position - right * static_cast<float>(dt) * speed;
 
-        // glfwSetCursorPos(window, (float)WIDTH / 2.0f, (float)HEIGHT / 2.0f);
+        glfwSetCursorPos(window, (float)width / 2.0f, (float)height / 2.0f);
     }
 }
 
