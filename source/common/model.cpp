@@ -1,7 +1,7 @@
 #include "model.hpp"
 
-Model::Model(std::vector<glm::vec3> const &vertices, std::vector<glm::vec2> const &uvs, std::vector<glm::vec3> const &normals)
-    : vertices(vertices), uvs(uvs), normals(normals), matrix(glm::mat4(1.0f)), color(1.0f, 0.5f, 1.0f, 1.0f)
+Model::Model(GLuint matrix_id, GLuint color_id, std::vector<glm::vec3> const &vertices, std::vector<glm::vec2> const &uvs, std::vector<glm::vec3> const &normals)
+    : matrix_id(matrix_id), color_id(color_id), vertices(vertices), uvs(uvs), normals(normals)
 {
     glGenBuffers(1, &vertex_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
@@ -12,7 +12,7 @@ void Model::draw(glm::mat4 const &view_projection)
 {
     auto mvp = view_projection * matrix;
     glUniformMatrix4fv(matrix_id, 1, GL_FALSE, &mvp[0][0]);
-    glUniform4f(color_id, 1.0f, 0.5f, 1.0f, 1.0f);
+    glUniform4f(color_id, color.r, color.g, color.b, color.a);
 
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
@@ -30,7 +30,7 @@ void Model::draw(glm::mat4 const &view_projection)
     glDisableVertexAttribArray(0);
 }
 
-Model* Model::from_obj(const char *path)
+Model* Model::from_obj(GLuint matrix_id, GLuint color_id, const char *path)
 {
     printf("Loading OBJ file %s...\n", path);
 
@@ -130,5 +130,5 @@ Model* Model::from_obj(const char *path)
     }
     fclose(file);
 
-    return new Model(vertices, uvs, normals);
+    return new Model(matrix_id, color_id, vertices, uvs, normals);
 }

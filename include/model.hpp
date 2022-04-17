@@ -11,16 +11,14 @@ struct Model
 {
     GLuint matrix_id;
     GLuint color_id;
-    GLuint vbo_id;
-    GLuint ibo_id;
     GLuint vertex_buffer;
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec2> uvs;
     std::vector<glm::vec3> normals;
-    glm::mat4 matrix;
-    glm::vec4 color;
+    glm::mat4 matrix = glm::mat4(1.0f);
+    glm::vec4 color = { 1.0f, 0.0f, 1.0f, 1.0f };
 
-    Model(std::vector<glm::vec3> const &vertices, std::vector<glm::vec2> const &uvs, std::vector<glm::vec3> const &normals);
+    Model(GLuint matrix_id, GLuint color_id, std::vector<glm::vec3> const &vertices, std::vector<glm::vec2> const &uvs, std::vector<glm::vec3> const &normals);
     void draw(glm::mat4 const &view_projection);
-    static Model* from_obj(const char *path);
+    static Model* from_obj(GLuint matrix_id, GLuint color_id, const char *path);
 };

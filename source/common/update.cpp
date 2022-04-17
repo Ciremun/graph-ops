@@ -33,7 +33,7 @@ void sort_spheres()
 
 void graph_ops_init()
 {
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 
     glEnable(GL_CULL_FACE);
 
@@ -55,7 +55,7 @@ void graph_ops_init()
     // sort_spheres();
 
     // spheres_imgui_draw_order = spheres;
-    models.push_back(Model::from_obj("models/test.obj"));
+    models.push_back(Model::from_obj(matrix_id, color_id, "models/test.obj"));
 }
 
 void graph_ops_update(double ticks, double dt)
