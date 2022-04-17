@@ -1,8 +1,6 @@
-#include "imgui_impl_sdl.h"
-#include <SDL.h>
-#include <SDL_opengles2.h>
-#include <emscripten.h>
 #include <stdio.h>
+
+#include "imgui_impl_sdl.h"
 
 #include "impl_base.hpp"
 #include "shader.hpp"
