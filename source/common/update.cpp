@@ -21,14 +21,13 @@ float speed = 5.0f;
 float mouse_speed = 0.1f;
 
 glm::highp_mat4 projection;
-// std::vector<Sphere*> spheres;
-// std::vector<Sphere*> spheres_imgui_draw_order;
-// std::vector<Sphere*>::iterator spheres_mid_it;
+std::vector<Model*> models_imgui_draw_order;
+std::vector<Model*>::iterator models_mid_it;
 std::vector<Model*> models;
 
-void sort_spheres()
+void sort_models()
 {
-    // spheres_mid_it = std::partition(spheres.begin(), spheres.end(), [](Sphere *s){ return s->color.a == 1.0f; });
+    models_mid_it = std::partition(models.begin(), models.end(), [](Model *m){ return m->color.a == 1.0f; });
 }
 
 void graph_ops_init()
@@ -48,14 +47,10 @@ void graph_ops_init()
     time_id = glGetUniformLocation(program_id, "u_time");
     color_id = glGetUniformLocation(program_id, "u_color");
 
-    // spheres = {
-    //     // new Sphere(matrix_id, color_id, glm::vec4(0.0f, 1.0f, 0.0f, 0.77f), 1.0f, 64, 32),
-    // };
-
-    // sort_spheres();
-
-    // spheres_imgui_draw_order = spheres;
     models.push_back(Model::from_obj(matrix_id, color_id, "models/test.obj"));
+
+    sort_models();
+    models_imgui_draw_order = models;
 }
 
 void graph_ops_update(double ticks, double dt)
@@ -75,51 +70,50 @@ void graph_ops_update(double ticks, double dt)
     auto view = glm::lookAt(position, position + direction, glm::vec3(0.0f, 1.0f, 0.0f));
     auto view_projection = projection * view;
 
-    // for (auto sphere_it = std::begin(spheres); sphere_it != spheres_mid_it; ++sphere_it)
-    // {
-    //     auto sphere = *sphere_it;
-    //     sphere->draw(view_projection);
-    // }
+    for (auto model_it = std::begin(models); model_it != models_mid_it; ++model_it)
+    {
+        auto model = *model_it;
+        model->draw(view_projection);
+    }
 
-    // if (spheres_mid_it != std::end(spheres))
-    // {
-    //     glDepthMask(GL_FALSE);
-    //     for (auto sphere_it = spheres_mid_it; sphere_it != std::end(spheres); ++sphere_it)
-    //     {
-    //         auto sphere = *sphere_it;
-    //         sphere->draw(view_projection);
-    //     }
-    //     glDepthMask(GL_TRUE);
-    // }
-
-    models[0]->draw(view_projection);
+    if (models_mid_it != std::end(models))
+    {
+        glDepthMask(GL_FALSE);
+        for (auto model_it = models_mid_it; model_it != std::end(models); ++model_it)
+        {
+            auto model = *model_it;
+            model->draw(view_projection);
+        }
+        glDepthMask(GL_TRUE);
+    }
 }
 
 void imgui_update()
 {
     ImGui::Begin("graph-ops");
 
-    // if (ImGui::Button("Create Sphere"))
-    // {
-    //     Sphere *sphere = new Sphere(matrix_id, color_id, glm::vec4(1.0f, 1.0f, 0.0f, 0.7f), 1.0f, 64, 32);
-    //     spheres_imgui_draw_order.push_back(sphere);
-    //     spheres.push_back(sphere);
-    //     sort_spheres();
-    // }
+    if (ImGui::Button("Create Model"))
+    {
+        const auto &base = models[0];
+        Model *model = new Model(matrix_id, color_id, base->vertices, base->uvs, base->normals);
+        models_imgui_draw_order.push_back(model);
+        models.push_back(model);
+        sort_models();
+    }
 
-    // for (size_t i = 0; i < spheres_imgui_draw_order.size(); ++i)
-    // {
-    //     auto sphere = spheres_imgui_draw_order[i];
-    //     auto prev_alpha = sphere->color.a;
-    //     ImGui::PushID(i);
-    //     ImGui::Text("Sphere %zu", i + 1);
-    //     ImGui::SliderFloat("X", &sphere->model[3].x, -4.0f, 4.0f);
-    //     ImGui::SliderFloat("Y", &sphere->model[3].y, -4.0f, 4.0f);
-    //     ImGui::SliderFloat("Z", &sphere->model[3].z, -4.0f, 4.0f);
-    //     if (ImGui::ColorPicker4("Color", (float *)&sphere->color) && sphere->color.a != prev_alpha)
-    //         sort_spheres();
-    //     ImGui::PopID();
-    // }
+    for (size_t i = 0; i < models_imgui_draw_order.size(); ++i)
+    {
+        auto model = models_imgui_draw_order[i];
+        auto prev_alpha = model->color.a;
+        ImGui::PushID(i);
+        ImGui::Text("Model %zu", i + 1);
+        ImGui::SliderFloat("X", &model->matrix[3].x, -4.0f, 4.0f);
+        ImGui::SliderFloat("Y", &model->matrix[3].y, -4.0f, 4.0f);
+        ImGui::SliderFloat("Z", &model->matrix[3].z, -4.0f, 4.0f);
+        if (ImGui::ColorPicker4("Color", (float *)&model->color) && model->color.a != prev_alpha)
+            sort_models();
+        ImGui::PopID();
+    }
 
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
