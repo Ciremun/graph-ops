@@ -14,7 +14,7 @@ GLuint matrix_id;
 GLuint time_id;
 GLuint color_id;
 
-glm::vec3 position = glm::vec3(.0f, 1.0f, 1.0f);
+glm::vec3 position = glm::vec3(.0f, 2.0f, 2.0f);
 float horizontal_angle = 3.15f;
 float vertical_angle = -0.63f;
 float speed = 5.0f;
