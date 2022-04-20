@@ -2,7 +2,6 @@
 
 #include <glm/glm.hpp>
 
-extern glm::vec3 position;
 extern float horizontal_angle;
 extern float vertical_angle;
 extern float speed;

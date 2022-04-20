@@ -21,10 +21,19 @@ EM_JS(int, mobile, (), {
 SDL_Window *g_Window = NULL;
 SDL_GLContext g_GLContext = NULL;
 
-void process_input(glm::vec3 const &direction, double dt)
+void process_input(glm::vec3 &position, glm::vec3 const &direction, double dt)
 {
-    (void)direction;
-    (void)dt;
+    auto right = glm::vec3(glm::sin(horizontal_angle - 3.14 / 2.0), 0.0f,
+                           glm::cos(horizontal_angle - 3.14 / 2.0));
+    const Uint8 *keys = SDL_GetKeyboardState(0);
+    if (keys[SDL_SCANCODE_W])
+        position = position + direction * static_cast<float>(dt) * speed;
+    if (keys[SDL_SCANCODE_S])
+        position = position - direction * static_cast<float>(dt) * speed;
+    if (keys[SDL_SCANCODE_D])
+        position = position + right * static_cast<float>(dt) * speed;
+    if (keys[SDL_SCANCODE_A])
+        position = position - right * static_cast<float>(dt) * speed;
 }
 
 static void main_loop(void *);
@@ -102,7 +111,15 @@ static void main_loop(void *arg)
         ImGui_ImplSDL2_ProcessEvent(&event);
     }
 
-    graph_ops_update(SDL_GetTicks64() / 1000.0f, NULL);
+    static Uint64 now = SDL_GetPerformanceCounter();
+    static Uint64 last_dt = 0;
+    static double dt = 0;
+
+    last_dt = now;
+    now = SDL_GetPerformanceCounter();
+    dt = (double)((now - last_dt) / (double)SDL_GetPerformanceFrequency());
+
+    graph_ops_update(SDL_GetTicks64() / 1000.0f, dt);
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame();

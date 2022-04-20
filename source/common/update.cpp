@@ -66,7 +66,7 @@ void graph_ops_update(double ticks, double dt)
                   glm::sin(vertical_angle),
                   glm::cos(vertical_angle) * glm::cos(horizontal_angle));
 
-    process_input(direction, dt);
+    process_input(position, direction, dt);
 
     auto view = glm::lookAt(position, position + direction, glm::vec3(0.0f, 1.0f, 0.0f));
     auto view_projection = projection * view;

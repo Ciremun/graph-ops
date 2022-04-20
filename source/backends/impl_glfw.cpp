@@ -34,7 +34,7 @@ static void glfw_error_callback(int error, const char *description)
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
-void process_input(glm::vec3 const &direction, double dt)
+void process_input(glm::vec3 &position, glm::vec3 const &direction, double dt)
 {
     if (g_focused)
     {
