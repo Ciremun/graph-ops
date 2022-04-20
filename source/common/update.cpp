@@ -5,29 +5,30 @@
 #include <vector>
 
 #include "impl_base.hpp"
+#include "model.hpp"
 #include "shader.hpp"
 #include "update.hpp"
-#include "model.hpp"
 
 GLuint program_id;
 GLuint matrix_id;
 GLuint time_id;
 GLuint color_id;
 
-glm::vec3 position = glm::vec3(0.0, 2.0, 3.5);
+glm::vec3 position = glm::vec3(.0f, 1.0f, 1.0f);
 float horizontal_angle = 3.15f;
 float vertical_angle = -0.63f;
 float speed = 5.0f;
 float mouse_speed = 0.1f;
 
 glm::highp_mat4 projection;
-std::vector<Model*> models_imgui_draw_order;
-std::vector<Model*>::iterator models_mid_it;
-std::vector<Model*> models;
+std::vector<Model *> models_imgui_draw_order;
+std::vector<Model *>::iterator models_mid_it;
+std::vector<Model *> models;
 
 void sort_models()
 {
-    models_mid_it = std::partition(models.begin(), models.end(), [](Model *m){ return m->color.a == 1.0f; });
+    models_mid_it = std::partition(models.begin(), models.end(), [](Model *m)
+                                   { return m->color.a == 1.0f; });
 }
 
 void graph_ops_init()
@@ -47,7 +48,7 @@ void graph_ops_init()
     time_id = glGetUniformLocation(program_id, "u_time");
     color_id = glGetUniformLocation(program_id, "u_color");
 
-    models.push_back(Model::from_obj(matrix_id, color_id, "models/test.obj"));
+    models.push_back(Model::from_obj(matrix_id, color_id, "models/link.obj"));
 
     sort_models();
     models_imgui_draw_order = models;
@@ -110,6 +111,14 @@ void imgui_update()
         ImGui::SliderFloat("X", &model->matrix[3].x, -4.0f, 4.0f);
         ImGui::SliderFloat("Y", &model->matrix[3].y, -4.0f, 4.0f);
         ImGui::SliderFloat("Z", &model->matrix[3].z, -4.0f, 4.0f);
+        static float degrees = .0f;
+        static float prev_degrees = degrees;
+        if (ImGui::SliderFloat("degrees", &degrees, .0f, 360.0f))
+        {
+            float radians = degrees < prev_degrees ? glm::radians(-(prev_degrees - degrees)) : glm::radians(degrees - prev_degrees);
+            model->matrix = glm::rotate(model->matrix, radians, glm::vec3(0.0f, 0.0f, 1.0f));
+            prev_degrees = degrees;
+        }
         if (ImGui::ColorPicker4("Color", (float *)&model->color) && model->color.a != prev_alpha)
             sort_models();
         ImGui::PopID();
