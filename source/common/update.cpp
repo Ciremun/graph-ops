@@ -128,9 +128,9 @@ void imgui_update()
         ImGui::PushID(i);
         if (ImGui::CollapsingHeader(model->label, ImGuiTreeNodeFlags_None))
         {
-            ImGui::SliderFloat("X", &model->matrix[3].x, -4.0f, 4.0f);
-            ImGui::SliderFloat("Y", &model->matrix[3].y, -4.0f, 4.0f);
-            ImGui::SliderFloat("Z", &model->matrix[3].z, -4.0f, 4.0f);
+            ImGui::SliderFloat("X", &model->matrix[3].x, -1024.0f, 1024.0f);
+            ImGui::SliderFloat("Y", &model->matrix[3].y, -1024.0f, 1024.0f);
+            ImGui::SliderFloat("Z", &model->matrix[3].z, -1024.0f, 1024.0f);
             float prev_x_rotation = model->rotation.x;
             float prev_y_rotation = model->rotation.y;
             float prev_z_rotation = model->rotation.z;
