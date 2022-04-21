@@ -86,8 +86,6 @@ void graph_ops_update(double ticks, double dt)
                   glm::sin(vertical_angle),
                   glm::cos(vertical_angle) * glm::cos(horizontal_angle));
 
-    process_input(position, direction, dt);
-
     auto view = glm::lookAt(position, position + direction, glm::vec3(0.0f, 1.0f, 0.0f));
     auto view_projection = projection * view;
 
@@ -107,6 +105,8 @@ void graph_ops_update(double ticks, double dt)
         }
         glDepthMask(GL_TRUE);
     }
+
+    process_input(position, direction, dt);
 }
 
 void imgui_update()
@@ -131,13 +131,24 @@ void imgui_update()
             ImGui::SliderFloat("X", &model->matrix[3].x, -4.0f, 4.0f);
             ImGui::SliderFloat("Y", &model->matrix[3].y, -4.0f, 4.0f);
             ImGui::SliderFloat("Z", &model->matrix[3].z, -4.0f, 4.0f);
-            static float degrees = .0f;
-            static float prev_degrees = degrees;
-            if (ImGui::SliderFloat("degrees", &degrees, .0f, 360.0f))
+            float prev_x_rotation = model->rotation.x;
+            float prev_y_rotation = model->rotation.y;
+            float prev_z_rotation = model->rotation.z;
+            if (ImGui::SliderFloat("Xr", &model->rotation.x, .0f, 360.0f))
             {
-                float radians = degrees < prev_degrees ? glm::radians(-(prev_degrees - degrees)) : glm::radians(degrees - prev_degrees);
-                model->matrix = glm::rotate(model->matrix, radians, glm::vec3(0.0f, 0.0f, 1.0f));
-                prev_degrees = degrees;
+                if (model->rotation.x != prev_x_rotation)
+                {
+                    float radians = model->rotation.x < prev_x_rotation ? glm::radians(-(prev_x_rotation - model->rotation.x)) : glm::radians(model->rotation.x - prev_x_rotation);
+                    model->matrix = glm::rotate(model->matrix, radians, glm::vec3(1.0f, 0.0f, 0.0f));
+                }
+            }
+            if (ImGui::SliderFloat("Zr", &model->rotation.z, .0f, 360.0f))
+            {
+                if (model->rotation.z != prev_z_rotation)
+                {
+                    float radians = model->rotation.z < prev_z_rotation ? glm::radians(-(prev_z_rotation - model->rotation.z)) : glm::radians(model->rotation.z - prev_z_rotation);
+                    model->matrix = glm::rotate(model->matrix, radians, glm::vec3(0.0f, 0.0f, 1.0f));
+                }
             }
             auto prev_alpha = model->color.a;
             if (ImGui::ColorPicker4("Color", (float *)&model->color) && model->color.a != prev_alpha)
