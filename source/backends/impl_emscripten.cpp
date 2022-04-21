@@ -6,6 +6,9 @@
 #include "shader.hpp"
 #include "update.hpp"
 
+int width = 0;
+int height = 0;
+
 EM_JS(int, canvas_get_width, (), {
     return window.canvas.width;
 });
@@ -15,7 +18,7 @@ EM_JS(int, canvas_get_height, (), {
 });
 
 EM_JS(int, mobile, (), {
-    return navigator.userAgentData.mobile;
+    return (('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0));
 });
 
 SDL_Window *g_Window = NULL;
@@ -38,8 +41,10 @@ void process_input(glm::vec3 &position, glm::vec3 const &direction, double dt)
 
 static void main_loop(void *);
 
-static void window_size_callback(int width, int height)
+static void window_size_callback(int new_width, int new_height)
 {
+    width = new_width;
+    height = new_height;
     if (!mobile())
         glViewport(0, 0, width, height);
     projection = glm::perspective(glm::radians(90.0f), (float)width / (float)height, 0.1f, 100.0f);
@@ -64,8 +69,8 @@ int main(int, char **)
     SDL_DisplayMode current;
     SDL_GetCurrentDisplayMode(0, &current);
     SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-    int width = canvas_get_width();
-    int height = canvas_get_height();
+    width = canvas_get_width();
+    height = canvas_get_height();
     g_Window = SDL_CreateWindow("graph-ops", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, window_flags);
     g_GLContext = SDL_GL_CreateContext(g_Window);
     if (!g_GLContext)

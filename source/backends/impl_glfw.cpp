@@ -17,9 +17,11 @@ GLFWwindow *window;
 
 extern GLuint program_id;
 
-static void window_size_callback(GLFWwindow *window, int width, int height)
+static void window_size_callback(GLFWwindow *window, int new_width, int new_height)
 {
     (void)window;
+    width = new_width;
+    height = new_height;
     glViewport(0, 0, width, height);
     projection = glm::perspective(glm::radians(90.0f), (float)width / (float)height, 0.1f, 100.0f);
 }
@@ -56,23 +58,6 @@ void process_input(glm::vec3 &position, glm::vec3 const &direction, double dt)
             position = position + right * static_cast<float>(dt) * speed;
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
             position = position - right * static_cast<float>(dt) * speed;
-
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-        {
-            double xpos, ypos;
-            glfwGetCursorPos(window, &xpos, &ypos);
-            glFlush();
-            glFinish();
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-            unsigned char data[4];
-            glReadPixels(xpos, height - ypos, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
-            if (data[0] == 255 && data[1] == 0 && data[2] == 0)
-                arrows[0]->matrix[3].x += 0.1f;
-            if (data[0] == 0 && data[1] == 255 && data[2] == 0)
-                arrows[1]->matrix[3].y += 0.1f;
-            if (data[0] == 0 && data[1] == 0 && data[2] == 255)
-                arrows[2]->matrix[3].z += 0.1f;
-        }
 
         // glfwSetCursorPos(window, (float)width / 2.0f, (float)height / 2.0f);
     }
@@ -164,7 +149,6 @@ int main()
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
 
         glfwSwapBuffers(window);
         glfwPollEvents();

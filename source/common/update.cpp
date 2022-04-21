@@ -25,6 +25,7 @@ std::vector<Model *> models_imgui_draw_order;
 std::vector<Model *>::iterator models_mid_it;
 std::vector<Model *> models;
 std::vector<Model *> arrows;
+Model *selected_model = NULL;
 
 void sort_models()
 {
@@ -50,21 +51,29 @@ void graph_ops_init()
     color_id = glGetUniformLocation(program_id, "u_color");
 
     models.push_back(Model::from_obj(matrix_id, color_id, "models/link.obj", "Link"));
+    selected_model = models[0];
 
     Model *base = Model::from_obj(matrix_id, color_id, "models/axis_arrow.obj", "Z axis arrow");
 
     Model *x_axis_arrow = new Model(matrix_id, color_id, base->vertices, base->uvs, base->normals, "X axis arrow");
     x_axis_arrow->color = glm::vec4(1.0f, .0f, 0.0f, 1.0f);
+    x_axis_arrow->matrix = glm::rotate(x_axis_arrow->matrix, glm::radians(270.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    x_axis_arrow->rotation.z = 270.0f;
+    x_axis_arrow->matrix[3].x = 0.29f;
 
     Model *y_axis_arrow = new Model(matrix_id, color_id, base->vertices, base->uvs, base->normals, "Y axis arrow");
     y_axis_arrow->color = glm::vec4(.0f, 1.0f, 0.0f, 1.0f);
+    y_axis_arrow->matrix[3].y = 0.29f;
 
     Model *z_axis_arrow = base;
     z_axis_arrow->color = glm::vec4(.0f, .0f, 1.0f, 1.0f);
+    z_axis_arrow->matrix = glm::rotate(z_axis_arrow->matrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    z_axis_arrow->rotation.z = 90.0f;
+    z_axis_arrow->matrix[3].z = 0.29f;
 
-    models.push_back(x_axis_arrow);
-    models.push_back(y_axis_arrow);
-    models.push_back(z_axis_arrow);
+    // models.push_back(x_axis_arrow);
+    // models.push_back(y_axis_arrow);
+    // models.push_back(z_axis_arrow);
 
     arrows.push_back(x_axis_arrow);
     arrows.push_back(y_axis_arrow);
@@ -106,11 +115,81 @@ void graph_ops_update(double ticks, double dt)
         glDepthMask(GL_TRUE);
     }
 
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    for (const auto &arrow : arrows)
+        arrow->draw(view_projection);
+
     process_input(position, direction, dt);
 }
 
 void imgui_update()
 {
+    if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+    {
+        static ImVec2 prev_mouse(0.0f, 0.0f);
+        ImVec2 mouse = ImGui::GetMousePos();
+        if (mouse.x != prev_mouse.x || mouse.y != prev_mouse.y)
+        {
+            auto &x = arrows[0];
+            auto &y = arrows[1];
+            auto &z = arrows[2];
+            if (x->drag || y->drag || z->drag)
+            {
+                float move_x = 0.0f;
+                float move_y = 0.0f;
+                float move_z = 0.0f;
+                if (x->drag)
+                {
+                    if (mouse.x < prev_mouse.x)
+                        move_x = -((prev_mouse.x - mouse.x) / 140.0f);
+                    else if (mouse.x > prev_mouse.x)
+                        move_x = (mouse.x - prev_mouse.x) / 140.0f;
+                }
+                if (y->drag)
+                {
+                    if (mouse.y < prev_mouse.y)
+                        move_y = (prev_mouse.y - mouse.y) / 140.0f;
+                    else if (mouse.y > prev_mouse.y)
+                        move_y = -((mouse.y - prev_mouse.y) / 140.0f);
+                }
+                if (z->drag)
+                {
+                    if (mouse.y < prev_mouse.y)
+                        move_z = -((prev_mouse.y - mouse.y) / 140.0f);
+                    else if (mouse.y > prev_mouse.y)
+                        move_z = (mouse.y - prev_mouse.y) / 140.0f;
+                }
+                selected_model->matrix[3].x += move_x;
+                selected_model->matrix[3].y += move_y;
+                selected_model->matrix[3].z += move_z;
+                for (auto & arrow: arrows)
+                {
+                    arrow->matrix[3].x += move_x;
+                    arrow->matrix[3].y += move_y;
+                    arrow->matrix[3].z += move_z;
+                }
+            }
+            else
+            {
+                unsigned char data[4];
+                glReadPixels(mouse.x, height - mouse.y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+                if (data[0] == 255 && data[1] == 0 && data[2] == 0 && data[3] == 255)
+                    x->drag = true;
+                else if (data[0] == 0 && data[1] == 255 && data[2] == 0 && data[3] == 255)
+                    y->drag = true;
+                else if (data[0] == 0 && data[1] == 0 && data[2] == 255 && data[3] == 255)
+                    z->drag = true;
+            }
+        }
+        prev_mouse = mouse;
+    }
+    if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+    {
+        for (const auto &arrow : arrows)
+            arrow->drag = false;
+    }
+
     ImGui::Begin("graph-ops");
 
     if (ImGui::Button("Create Model"))
@@ -128,9 +207,9 @@ void imgui_update()
         ImGui::PushID(i);
         if (ImGui::CollapsingHeader(model->label, ImGuiTreeNodeFlags_None))
         {
-            ImGui::SliderFloat("X", &model->matrix[3].x, -1024.0f, 1024.0f);
-            ImGui::SliderFloat("Y", &model->matrix[3].y, -1024.0f, 1024.0f);
-            ImGui::SliderFloat("Z", &model->matrix[3].z, -1024.0f, 1024.0f);
+            ImGui::SliderFloat("X", &model->matrix[3].x, -24.0f, 24.0f);
+            ImGui::SliderFloat("Y", &model->matrix[3].y, -24.0f, 24.0f);
+            ImGui::SliderFloat("Z", &model->matrix[3].z, -24.0f, 24.0f);
             float prev_x_rotation = model->rotation.x;
             float prev_y_rotation = model->rotation.y;
             float prev_z_rotation = model->rotation.z;
