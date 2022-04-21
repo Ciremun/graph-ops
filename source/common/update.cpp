@@ -132,7 +132,6 @@ void imgui_update()
             ImGui::SliderFloat("Y", &model->matrix[3].y, -4.0f, 4.0f);
             ImGui::SliderFloat("Z", &model->matrix[3].z, -4.0f, 4.0f);
             float prev_x_rotation = model->rotation.x;
-            float prev_y_rotation = model->rotation.y;
             float prev_z_rotation = model->rotation.z;
             if (ImGui::SliderFloat("Xr", &model->rotation.x, .0f, 360.0f))
             {
