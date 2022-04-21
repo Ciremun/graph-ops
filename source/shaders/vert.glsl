@@ -9,7 +9,5 @@ uniform float u_time;
 
 void main()
 {
-    vec3 vp = vert_pos;
-    vp.y += sin(u_time);
-    gl_Position = MVP * vec4(vp, 1);
+    gl_Position = MVP * vec4(vert_pos, 1);
 }

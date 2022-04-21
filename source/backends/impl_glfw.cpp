@@ -1,7 +1,8 @@
-#include "imgui_impl_glfw.h"
-
 #include <stdio.h>
 #include <vector>
+
+#include "imgui_impl_glfw.h"
+#include <glm/gtx/string_cast.hpp>
 
 #include "impl_base.hpp"
 #include "io.hpp"
@@ -146,6 +147,7 @@ int main()
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 
         glfwSwapBuffers(window);
         glfwPollEvents();

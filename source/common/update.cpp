@@ -24,6 +24,7 @@ glm::highp_mat4 projection;
 std::vector<Model *> models_imgui_draw_order;
 std::vector<Model *>::iterator models_mid_it;
 std::vector<Model *> models;
+std::vector<Model *> arrows;
 
 void sort_models()
 {
@@ -48,7 +49,26 @@ void graph_ops_init()
     time_id = glGetUniformLocation(program_id, "u_time");
     color_id = glGetUniformLocation(program_id, "u_color");
 
-    models.push_back(Model::from_obj(matrix_id, color_id, "models/link.obj"));
+    models.push_back(Model::from_obj(matrix_id, color_id, "models/link.obj", "Link"));
+
+    Model *base = Model::from_obj(matrix_id, color_id, "models/axis_arrow.obj", "Z axis arrow");
+
+    Model *x_axis_arrow = new Model(matrix_id, color_id, base->vertices, base->uvs, base->normals, "X axis arrow");
+    x_axis_arrow->color = glm::vec4(1.0f, .0f, 0.0f, 1.0f);
+
+    Model *y_axis_arrow = new Model(matrix_id, color_id, base->vertices, base->uvs, base->normals, "Y axis arrow");
+    y_axis_arrow->color = glm::vec4(.0f, 1.0f, 0.0f, 1.0f);
+
+    Model *z_axis_arrow = base;
+    z_axis_arrow->color = glm::vec4(.0f, .0f, 1.0f, 1.0f);
+
+    models.push_back(x_axis_arrow);
+    models.push_back(y_axis_arrow);
+    models.push_back(z_axis_arrow);
+
+    arrows.push_back(x_axis_arrow);
+    arrows.push_back(y_axis_arrow);
+    arrows.push_back(z_axis_arrow);
 
     sort_models();
     models_imgui_draw_order = models;
@@ -104,23 +124,25 @@ void imgui_update()
 
     for (size_t i = 0; i < models_imgui_draw_order.size(); ++i)
     {
-        auto model = models_imgui_draw_order[i];
-        auto prev_alpha = model->color.a;
+        auto &model = models_imgui_draw_order[i];
         ImGui::PushID(i);
-        ImGui::Text("Model %zu", i + 1);
-        ImGui::SliderFloat("X", &model->matrix[3].x, -4.0f, 4.0f);
-        ImGui::SliderFloat("Y", &model->matrix[3].y, -4.0f, 4.0f);
-        ImGui::SliderFloat("Z", &model->matrix[3].z, -4.0f, 4.0f);
-        static float degrees = .0f;
-        static float prev_degrees = degrees;
-        if (ImGui::SliderFloat("degrees", &degrees, .0f, 360.0f))
+        if (ImGui::CollapsingHeader(model->label, ImGuiTreeNodeFlags_None))
         {
-            float radians = degrees < prev_degrees ? glm::radians(-(prev_degrees - degrees)) : glm::radians(degrees - prev_degrees);
-            model->matrix = glm::rotate(model->matrix, radians, glm::vec3(0.0f, 0.0f, 1.0f));
-            prev_degrees = degrees;
+            ImGui::SliderFloat("X", &model->matrix[3].x, -4.0f, 4.0f);
+            ImGui::SliderFloat("Y", &model->matrix[3].y, -4.0f, 4.0f);
+            ImGui::SliderFloat("Z", &model->matrix[3].z, -4.0f, 4.0f);
+            static float degrees = .0f;
+            static float prev_degrees = degrees;
+            if (ImGui::SliderFloat("degrees", &degrees, .0f, 360.0f))
+            {
+                float radians = degrees < prev_degrees ? glm::radians(-(prev_degrees - degrees)) : glm::radians(degrees - prev_degrees);
+                model->matrix = glm::rotate(model->matrix, radians, glm::vec3(0.0f, 0.0f, 1.0f));
+                prev_degrees = degrees;
+            }
+            auto prev_alpha = model->color.a;
+            if (ImGui::ColorPicker4("Color", (float *)&model->color) && model->color.a != prev_alpha)
+                sort_models();
         }
-        if (ImGui::ColorPicker4("Color", (float *)&model->color) && model->color.a != prev_alpha)
-            sort_models();
         ImGui::PopID();
     }
 
