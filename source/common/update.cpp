@@ -132,6 +132,7 @@ void imgui_update()
             ImGui::SliderFloat("Y", &model->matrix[3].y, -4.0f, 4.0f);
             ImGui::SliderFloat("Z", &model->matrix[3].z, -4.0f, 4.0f);
             float prev_x_rotation = model->rotation.x;
+            float prev_y_rotation = model->rotation.y;
             float prev_z_rotation = model->rotation.z;
             if (ImGui::SliderFloat("Xr", &model->rotation.x, .0f, 360.0f))
             {
@@ -139,6 +140,14 @@ void imgui_update()
                 {
                     float radians = model->rotation.x < prev_x_rotation ? glm::radians(-(prev_x_rotation - model->rotation.x)) : glm::radians(model->rotation.x - prev_x_rotation);
                     model->matrix = glm::rotate(model->matrix, radians, glm::vec3(1.0f, 0.0f, 0.0f));
+                }
+            }
+            if (ImGui::SliderFloat("Yr", &model->rotation.y, .0f, 360.0f))
+            {
+                if (model->rotation.y != prev_y_rotation)
+                {
+                    float radians = model->rotation.y < prev_y_rotation ? glm::radians(-(prev_y_rotation - model->rotation.y)) : glm::radians(model->rotation.y - prev_y_rotation);
+                    model->matrix = glm::rotate(model->matrix, radians, glm::vec3(0.0f, 1.0f, 0.0f));
                 }
             }
             if (ImGui::SliderFloat("Zr", &model->rotation.z, .0f, 360.0f))
