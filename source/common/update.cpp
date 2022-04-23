@@ -51,7 +51,6 @@ void graph_ops_init()
     color_id = glGetUniformLocation(program_id, "u_color");
 
     models.push_back(Model::from_obj(matrix_id, color_id, "models/link.obj", "Link"));
-    selected_model = models[0];
 
     Model *base = Model::from_obj(matrix_id, color_id, "models/axis_arrow.obj", "Z axis arrow");
 
@@ -70,10 +69,6 @@ void graph_ops_init()
     z_axis_arrow->matrix = glm::rotate(z_axis_arrow->matrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     z_axis_arrow->rotation.z = 90.0f;
     z_axis_arrow->matrix[3].z = 0.29f;
-
-    // models.push_back(x_axis_arrow);
-    // models.push_back(y_axis_arrow);
-    // models.push_back(z_axis_arrow);
 
     arrows.push_back(x_axis_arrow);
     arrows.push_back(y_axis_arrow);
@@ -117,8 +112,9 @@ void graph_ops_update(double ticks, double dt)
 
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    for (const auto &arrow : arrows)
-        arrow->draw(view_projection);
+    if (selected_model)
+        for (const auto &arrow : arrows)
+            arrow->draw(view_projection);
 
     process_input(position, direction, dt);
 }
@@ -134,7 +130,7 @@ void imgui_update()
             auto &x = arrows[0];
             auto &y = arrows[1];
             auto &z = arrows[2];
-            if (x->drag || y->drag || z->drag)
+            if (selected_model && (x->drag || y->drag || z->drag))
             {
                 float move_x = 0.0f;
                 float move_y = 0.0f;
@@ -174,12 +170,19 @@ void imgui_update()
             {
                 unsigned char data[4];
                 glReadPixels(mouse.x, height - mouse.y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
-                if (data[0] == 255 && data[1] == 0 && data[2] == 0 && data[3] == 255)
-                    x->drag = true;
-                else if (data[0] == 0 && data[1] == 255 && data[2] == 0 && data[3] == 255)
-                    y->drag = true;
-                else if (data[0] == 0 && data[1] == 0 && data[2] == 255 && data[3] == 255)
-                    z->drag = true;
+                if (selected_model)
+                {
+                    if (data[0] == 255 && data[1] == 0 && data[2] == 0 && data[3] == 255)
+                        x->drag = true;
+                    else if (data[0] == 0 && data[1] == 255 && data[2] == 0 && data[3] == 255)
+                        y->drag = true;
+                    else if (data[0] == 0 && data[1] == 0 && data[2] == 255 && data[3] == 255)
+                        z->drag = true;
+                    else if (!(data[0] == 255 && data[1] == 0 && data[2] == 255 && data[3] == 255))
+                        selected_model = NULL;
+                }
+                else if (data[0] == 255 && data[1] == 0 && data[2] == 255 && data[3] == 255)
+                    selected_model = models[0];
             }
         }
         prev_mouse = mouse;
