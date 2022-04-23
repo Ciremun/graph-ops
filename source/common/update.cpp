@@ -193,6 +193,7 @@ void imgui_update()
             arrow->drag = false;
     }
 
+    ImGui::SetNextWindowSize(ImVec2(0.0f, 520.0f), ImGuiCond_Once);
     ImGui::Begin("graph-ops");
 
     if (ImGui::Button("Create Model"))
@@ -208,6 +209,8 @@ void imgui_update()
     {
         auto &model = models_imgui_draw_order[i];
         ImGui::PushID(i);
+        if (i == 0)
+            ImGui::SetNextItemOpen(true, ImGuiCond_Once);
         if (ImGui::CollapsingHeader(model->label, ImGuiTreeNodeFlags_None))
         {
             ImGui::SliderFloat("X", &model->matrix[3].x, -24.0f, 24.0f);
