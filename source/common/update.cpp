@@ -27,6 +27,208 @@ std::vector<Model *> models;
 std::vector<Model *> arrows;
 Model *selected_model = NULL;
 
+struct aabb
+{
+    glm::vec3 min;
+    glm::vec3 max;
+};
+
+struct ray
+{
+    glm::vec3 org;
+    glm::vec3 dir;
+};
+
+struct Line
+{
+    unsigned int VBO, VAO;
+    std::vector<float> vertices;
+
+    Line(glm::vec3 start, glm::vec3 end)
+    {
+        vertices = {
+            start.x,
+            start.y,
+            start.z,
+            end.x,
+            end.y,
+            end.z,
+        };
+
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+        glBindVertexArray(VAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, 24, vertices.data(), GL_DYNAMIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+        glEnableVertexAttribArray(0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    void update(glm::vec3 const &start, glm::vec3 const &end)
+    {
+        vertices = {
+            start.x,
+            start.y,
+            start.z,
+            end.x,
+            end.y,
+            end.z,
+        };
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, 24, vertices.data());
+    }
+
+    void draw()
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+        glEnableVertexAttribArray(0);
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_LINES, 0, 2);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    ~Line()
+    {
+        glDeleteVertexArrays(1, &VAO);
+        glDeleteBuffers(1, &VBO);
+    }
+};
+
+struct Box
+{
+    unsigned int VBO, VAO;
+    std::vector<float> vertices;
+
+    Box(aabb b)
+    {
+        vertices = {
+            b.min.x, b.min.y, b.min.z,
+            b.max.x, b.min.y, b.min.z,
+            b.max.x, b.max.y, b.min.z,
+            b.min.x, b.max.y, b.min.z,
+
+            // Loop 2: XY Z (max)
+            b.min.x, b.min.y, b.max.z,
+            b.max.x, b.min.y, b.max.z,
+            b.max.x, b.max.y, b.max.z,
+            b.min.x, b.max.y, b.max.z,
+
+            // Lists:
+            // 1
+            b.min.x, b.min.y, b.min.z,
+            b.min.x, b.min.y, b.max.z,
+            // 2
+            b.max.x, b.min.y, b.min.z,
+            b.max.x, b.min.y, b.max.z,
+            // 3
+            b.max.x, b.max.y, b.min.z,
+            b.max.x, b.max.y, b.max.z,
+            // 4
+            b.min.x, b.max.y, b.min.z,
+            b.min.x, b.max.y, b.max.z,
+        };
+
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+        glBindVertexArray(VAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+        glEnableVertexAttribArray(0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    void draw()
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+        glEnableVertexAttribArray(0);
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_LINE_LOOP, 0, 4);
+        glDrawArrays(GL_LINE_LOOP, 4, 4);
+        glDrawArrays(GL_LINES, 8, 8);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    ~Box()
+    {
+        glDeleteVertexArrays(1, &VAO);
+        glDeleteBuffers(1, &VBO);
+    }
+};
+
+bool intersect(ray r, aabb b)
+{
+    // r.dir is unit direction vector of ray
+    glm::vec3 dirfrac;
+    dirfrac.x = 1.0f / r.dir.x;
+    dirfrac.y = 1.0f / r.dir.y;
+    dirfrac.z = 1.0f / r.dir.z;
+    // lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
+    // r.org is origin of ray
+    float t1 = (b.min.x - r.org.x) * dirfrac.x;
+    float t2 = (b.max.x - r.org.x) * dirfrac.x;
+    float t3 = (b.min.y - r.org.y) * dirfrac.y;
+    float t4 = (b.max.y - r.org.y) * dirfrac.y;
+    float t5 = (b.min.z - r.org.z) * dirfrac.z;
+    float t6 = (b.max.z - r.org.z) * dirfrac.z;
+
+    float tmin = glm::max(glm::max(glm::min(t1, t2), glm::min(t3, t4)), glm::min(t5, t6));
+    float tmax = glm::min(glm::min(glm::max(t1, t2), glm::max(t3, t4)), glm::max(t5, t6));
+
+    // if tmax < 0, ray (line) is intersecting AABB, but the whole AABB is behind us
+    if (tmax < 0)
+    {
+        // t = tmax;
+        return false;
+    }
+
+    // if tmin > tmax, ray doesn't intersect AABB
+    if (tmin > tmax)
+    {
+        // t = tmax;
+        return false;
+    }
+
+    // t = tmin;
+    return true;
+}
+
+glm::vec3 cast_ray(double xpos, double ypos, glm::mat4 const &view, glm::mat4 const &projection)
+{
+    // converts a position from the 2d xpos, ypos to a normalized 3d direction
+    float x = (2.0f * xpos) / width - 1.0f;
+    float y = 1.0f - (2.0f * ypos) / height;
+    // or (2.0f * ypos) / SCR_HEIGHT - 1.0f; depending on how you calculate ypos/lastY
+    float z = 1.0f;
+    glm::vec3 ray_nds = glm::vec3(x, y, z);
+    glm::vec4 ray_clip = glm::vec4(ray_nds.x, ray_nds.y, -1.0f, 1.0f);
+    // eye space to clip we would multiply by projection so
+    // clip space to eye space is the inverse projection
+    glm::vec4 ray_eye = glm::inverse(projection) * ray_clip;
+    // convert point to forwards
+    ray_eye = glm::vec4(ray_eye.x, ray_eye.y, -1.0f, 0.0f);
+    // world space to eye space is usually multiply by view so
+    // eye space to world space is inverse view
+    glm::vec4 inv_ray_wor = glm::inverse(view) * ray_eye;
+    glm::vec3 ray_wor = glm::vec3(inv_ray_wor.x, inv_ray_wor.y, inv_ray_wor.z);
+    ray_wor = glm::normalize(ray_wor);
+    return ray_wor;
+}
+
 void sort_models()
 {
     models_mid_it = std::partition(models.begin(), models.end(), [](Model *m)
@@ -116,6 +318,43 @@ void graph_ops_update(double ticks, double dt)
         for (const auto &arrow : arrows)
             arrow->draw(view_projection);
 
+    static glm::vec3 line_start(position.x, position.y, position.z);
+    static glm::vec3 line_end(position.x, position.y, position.z);
+
+    auto mvp = view_projection * glm::mat4(1.0f);
+    glUniformMatrix4fv(matrix_id, 1, GL_FALSE, &mvp[0][0]);
+    glUniform4f(color_id, 1.0f, 1.0f, 1.0f, 1.0f);
+
+    static Line mouse_ray_line(line_start, line_end);
+    mouse_ray_line.draw();
+
+    static ray r;
+    r.org = glm::vec3(0.0f, 0.0f, 0.0f);
+    r.dir = glm::vec3(0.0f, 0.0f, 0.0f);
+    static aabb b;
+    b.min = glm::vec3(-1.0f, -1.0f, -1.0f);
+    b.max = glm::vec3(1.0f, 1.0f, 1.0f);
+    static bool intersects = false;
+    if (intersects)
+        glUniform4f(color_id, 1.0f, 0.0f, 1.0f, 1.0f);
+    else
+        glUniform4f(color_id, 1.0f, 1.0f, 1.0f, 1.0f);
+
+    static Box box(b);
+    box.draw();
+
+    if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+    {
+        ImVec2 xy = ImGui::GetMousePos();
+        glm::vec3 mouse_ray = cast_ray(xy.x, xy.y, view, projection);
+        float t = 1000.0f;
+        glm::vec3 mouse_ray_world = position + t * mouse_ray;
+        r.org = line_start = position;
+        r.dir = line_end = mouse_ray_world;
+        intersects = intersect(r, b);
+        mouse_ray_line.update(line_start, line_end);
+    }
+
     process_input(position, direction, dt);
 }
 
@@ -159,7 +398,7 @@ void imgui_update()
                 selected_model->matrix[3].x += move_x;
                 selected_model->matrix[3].y += move_y;
                 selected_model->matrix[3].z += move_z;
-                for (auto & arrow: arrows)
+                for (auto &arrow : arrows)
                 {
                     arrow->matrix[3].x += move_x;
                     arrow->matrix[3].y += move_y;

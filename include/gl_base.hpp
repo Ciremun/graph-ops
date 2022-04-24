@@ -6,6 +6,7 @@
 #endif
 
 #ifdef __EMSCRIPTEN__
+#include <GLES3/gl3.h>
 #include <SDL.h>
 #include <SDL_opengles2.h>
 #include <emscripten.h>
