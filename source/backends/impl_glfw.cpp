@@ -2,7 +2,6 @@
 #include <vector>
 
 #include "imgui_impl_glfw.h"
-#include <glm/gtx/string_cast.hpp>
 
 #include "impl_base.hpp"
 #include "io.hpp"

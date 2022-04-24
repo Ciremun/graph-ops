@@ -6,6 +6,31 @@ Model::Model(GLuint matrix_id, GLuint color_id, std::vector<glm::vec3> const &ve
     glGenBuffers(1, &vertex_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &this->vertices[0], GL_STATIC_DRAW);
+
+    glm::vec3 min = {INFINITY, INFINITY, INFINITY};
+    glm::vec3 max = {-INFINITY, -INFINITY, -INFINITY};
+
+    for (const auto &vertex : vertices)
+    {
+        if (vertex.x < min.x)
+            min.x = vertex.x;
+        if (vertex.y < min.y)
+            min.y = vertex.y;
+        if (vertex.z < min.z)
+            min.z = vertex.z;
+
+        if (vertex.x > max.x)
+            max.x = vertex.x;
+        if (vertex.y > max.y)
+            max.y = vertex.y;
+        if (vertex.z > max.z)
+            max.z = vertex.z;
+    }
+
+    box.min = min;
+    box.max = max;
+
+    box_copy = box;
 }
 
 void Model::draw(glm::mat4 const &view_projection)
@@ -30,7 +55,7 @@ void Model::draw(glm::mat4 const &view_projection)
     glDisableVertexAttribArray(0);
 }
 
-Model* Model::from_obj(GLuint matrix_id, GLuint color_id, const char *path, const char *label)
+Model *Model::from_obj(GLuint matrix_id, GLuint color_id, const char *path, const char *label)
 {
     printf("Loading OBJ file %s...\n", path);
 

@@ -7,6 +7,18 @@
 
 #include "gl_base.hpp"
 
+struct aabb
+{
+    glm::vec3 min;
+    glm::vec3 max;
+};
+
+struct ray
+{
+    glm::vec3 org;
+    glm::vec3 dir;
+};
+
 struct Model
 {
     GLuint matrix_id;
@@ -18,6 +30,8 @@ struct Model
     glm::mat4 matrix = glm::mat4(1.0f);
     glm::vec4 color = {1.0f, 0.0f, 1.0f, 1.0f};
     glm::vec3 rotation = {0.0f, 0.0f, 0.0f};
+    aabb box;
+    aabb box_copy;
     const char *label;
     bool drag = false;
 

@@ -27,17 +27,37 @@ std::vector<Model *> models;
 std::vector<Model *> arrows;
 Model *selected_model = NULL;
 
-struct aabb
+aabb GetTransformedBounds(aabb original, glm::mat4 transformation)
 {
-    glm::vec3 min;
-    glm::vec3 max;
-};
+    std::vector<glm::vec3> corners = {
+        original.min,
+        {original.min.x, original.min.y, original.max.z},
+        {original.min.x, original.max.y, original.min.z},
+        {original.max.x, original.min.y, original.min.z},
+        {original.min.x, original.max.y, original.max.z},
+        {original.max.x, original.min.y, original.max.z},
+        {original.max.x, original.max.y, original.min.z},
+        original.max,
+    };
 
-struct ray
-{
-    glm::vec3 org;
-    glm::vec3 dir;
-};
+    glm::vec3 min = {INFINITY, INFINITY, INFINITY};
+    glm::vec3 max = {-INFINITY, -INFINITY, -INFINITY};
+
+    // Transform all of the corners, and keep track of the greatest and least
+    // values we see on each coordinate axis.
+    for (int i = 0; i < 8; i++)
+    {
+        glm::vec3 transformed = glm::vec3(transformation * glm::vec4(corners[i], 1.0f));
+        min = glm::min(min, transformed);
+        max = glm::max(max, transformed);
+    }
+
+    aabb aabb;
+    aabb.min = min;
+    aabb.max = max;
+
+    return aabb;
+}
 
 struct Line
 {
@@ -110,30 +130,62 @@ struct Box
     Box(aabb b)
     {
         vertices = {
-            b.min.x, b.min.y, b.min.z,
-            b.max.x, b.min.y, b.min.z,
-            b.max.x, b.max.y, b.min.z,
-            b.min.x, b.max.y, b.min.z,
+            b.min.x,
+            b.min.y,
+            b.min.z,
+            b.max.x,
+            b.min.y,
+            b.min.z,
+            b.max.x,
+            b.max.y,
+            b.min.z,
+            b.min.x,
+            b.max.y,
+            b.min.z,
 
             // Loop 2: XY Z (max)
-            b.min.x, b.min.y, b.max.z,
-            b.max.x, b.min.y, b.max.z,
-            b.max.x, b.max.y, b.max.z,
-            b.min.x, b.max.y, b.max.z,
+            b.min.x,
+            b.min.y,
+            b.max.z,
+            b.max.x,
+            b.min.y,
+            b.max.z,
+            b.max.x,
+            b.max.y,
+            b.max.z,
+            b.min.x,
+            b.max.y,
+            b.max.z,
 
             // Lists:
             // 1
-            b.min.x, b.min.y, b.min.z,
-            b.min.x, b.min.y, b.max.z,
+            b.min.x,
+            b.min.y,
+            b.min.z,
+            b.min.x,
+            b.min.y,
+            b.max.z,
             // 2
-            b.max.x, b.min.y, b.min.z,
-            b.max.x, b.min.y, b.max.z,
+            b.max.x,
+            b.min.y,
+            b.min.z,
+            b.max.x,
+            b.min.y,
+            b.max.z,
             // 3
-            b.max.x, b.max.y, b.min.z,
-            b.max.x, b.max.y, b.max.z,
+            b.max.x,
+            b.max.y,
+            b.min.z,
+            b.max.x,
+            b.max.y,
+            b.max.z,
             // 4
-            b.min.x, b.max.y, b.min.z,
-            b.min.x, b.max.y, b.max.z,
+            b.min.x,
+            b.max.y,
+            b.min.z,
+            b.min.x,
+            b.max.y,
+            b.max.z,
         };
 
         glGenVertexArrays(1, &VAO);
@@ -141,13 +193,78 @@ struct Box
         glBindVertexArray(VAO);
 
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_DYNAMIC_DRAW);
 
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
         glEnableVertexAttribArray(0);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
+    }
+
+    void update(aabb const &b)
+    {
+        vertices = {
+            b.min.x,
+            b.min.y,
+            b.min.z,
+            b.max.x,
+            b.min.y,
+            b.min.z,
+            b.max.x,
+            b.max.y,
+            b.min.z,
+            b.min.x,
+            b.max.y,
+            b.min.z,
+
+            // Loop 2: XY Z (max)
+            b.min.x,
+            b.min.y,
+            b.max.z,
+            b.max.x,
+            b.min.y,
+            b.max.z,
+            b.max.x,
+            b.max.y,
+            b.max.z,
+            b.min.x,
+            b.max.y,
+            b.max.z,
+
+            // Lists:
+            // 1
+            b.min.x,
+            b.min.y,
+            b.min.z,
+            b.min.x,
+            b.min.y,
+            b.max.z,
+            // 2
+            b.max.x,
+            b.min.y,
+            b.min.z,
+            b.max.x,
+            b.min.y,
+            b.max.z,
+            // 3
+            b.max.x,
+            b.max.y,
+            b.min.z,
+            b.max.x,
+            b.max.y,
+            b.max.z,
+            // 4
+            b.min.x,
+            b.max.y,
+            b.min.z,
+            b.min.x,
+            b.max.y,
+            b.max.z,
+        };
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(float), vertices.data());
     }
 
     void draw()
@@ -272,6 +389,10 @@ void graph_ops_init()
     z_axis_arrow->rotation.z = 90.0f;
     z_axis_arrow->matrix[3].z = 0.29f;
 
+    x_axis_arrow->box = GetTransformedBounds(x_axis_arrow->box_copy, x_axis_arrow->matrix);
+    y_axis_arrow->box = GetTransformedBounds(y_axis_arrow->box_copy, y_axis_arrow->matrix);
+    z_axis_arrow->box = GetTransformedBounds(z_axis_arrow->box_copy, z_axis_arrow->matrix);
+
     arrows.push_back(x_axis_arrow);
     arrows.push_back(y_axis_arrow);
     arrows.push_back(z_axis_arrow);
@@ -329,20 +450,26 @@ void graph_ops_update(double ticks, double dt)
     mouse_ray_line.draw();
 
     static ray r;
-    r.org = glm::vec3(0.0f, 0.0f, 0.0f);
-    r.dir = glm::vec3(0.0f, 0.0f, 0.0f);
-    static aabb b;
-    b.min = glm::vec3(-1.0f, -1.0f, -1.0f);
-    b.max = glm::vec3(1.0f, 1.0f, 1.0f);
-    static bool intersects = false;
-    if (intersects)
-        glUniform4f(color_id, 1.0f, 0.0f, 1.0f, 1.0f);
-    else
-        glUniform4f(color_id, 1.0f, 1.0f, 1.0f, 1.0f);
 
-    static Box box(b);
-    box.draw();
+    // static Box box(models[0]->box);
+    // box.update(models[0]->box);
+    // box.draw();
 
+    // static Box x_arrow(arrows[0]->box);
+    // x_arrow.update(arrows[0]->box);
+    // x_arrow.draw();
+
+    // static Box y_arrow(arrows[1]->box);
+    // y_arrow.update(arrows[1]->box);
+    // y_arrow.draw();
+
+    // static Box z_arrow(arrows[2]->box);
+    // z_arrow.update(arrows[2]->box);
+    // z_arrow.draw();
+
+    auto &x = arrows[0];
+    auto &y = arrows[1];
+    auto &z = arrows[2];
     if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && !ImGui::IsAnyItemActive())
     {
         ImVec2 xy = ImGui::GetMousePos();
@@ -351,9 +478,16 @@ void graph_ops_update(double ticks, double dt)
         glm::vec3 mouse_ray_world = position + t * mouse_ray;
         r.org = line_start = position;
         r.dir = line_end = mouse_ray_world;
-        intersects = intersect(r, b);
-        // models[0]->matrix[3] = glm::vec4(position + 3.0f * mouse_ray, 1.0f);
         mouse_ray_line.update(line_start, line_end);
+        if (selected_model && !(x->drag || y->drag || z->drag))
+        {
+            for (const auto &arrow : arrows)
+                arrow->drag = intersect(r, arrow->box);
+        }
+        if (!(x->drag || y->drag || z->drag))
+        {
+            selected_model = intersect(r, models[0]->box) ? models[0] : NULL;
+        }
     }
 
     process_input(position, direction, dt);
@@ -399,30 +533,14 @@ void imgui_update()
                 selected_model->matrix[3].x += move_x;
                 selected_model->matrix[3].y += move_y;
                 selected_model->matrix[3].z += move_z;
+                selected_model->box = GetTransformedBounds(selected_model->box_copy, selected_model->matrix);
                 for (auto &arrow : arrows)
                 {
                     arrow->matrix[3].x += move_x;
                     arrow->matrix[3].y += move_y;
                     arrow->matrix[3].z += move_z;
+                    arrow->box = GetTransformedBounds(arrow->box_copy, arrow->matrix);
                 }
-            }
-            else
-            {
-                unsigned char data[4];
-                glReadPixels(mouse.x, height - mouse.y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
-                if (selected_model)
-                {
-                    if (data[0] == 255 && data[1] == 0 && data[2] == 0 && data[3] == 255)
-                        x->drag = true;
-                    else if (data[0] == 0 && data[1] == 255 && data[2] == 0 && data[3] == 255)
-                        y->drag = true;
-                    else if (data[0] == 0 && data[1] == 0 && data[2] == 255 && data[3] == 255)
-                        z->drag = true;
-                    else if (!(data[0] == 255 && data[1] == 0 && data[2] == 255 && data[3] == 255))
-                        selected_model = NULL;
-                }
-                else if (data[0] == 255 && data[1] == 0 && data[2] == 255 && data[3] == 255)
-                    selected_model = models[0];
             }
         }
         prev_mouse = mouse;
