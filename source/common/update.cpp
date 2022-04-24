@@ -343,7 +343,7 @@ void graph_ops_update(double ticks, double dt)
     static Box box(b);
     box.draw();
 
-    if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+    if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && !ImGui::IsAnyItemActive())
     {
         ImVec2 xy = ImGui::GetMousePos();
         glm::vec3 mouse_ray = cast_ray(xy.x, xy.y, view, projection);
@@ -352,6 +352,7 @@ void graph_ops_update(double ticks, double dt)
         r.org = line_start = position;
         r.dir = line_end = mouse_ray_world;
         intersects = intersect(r, b);
+        // models[0]->matrix[3] = glm::vec4(position + 3.0f * mouse_ray, 1.0f);
         mouse_ray_line.update(line_start, line_end);
     }
 
@@ -433,8 +434,14 @@ void imgui_update()
     }
 
     ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
-    ImGui::SetNextWindowSize(ImVec2(200.0f, 250.0f), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(260.0f, 260.0f), ImGuiCond_Once);
     ImGui::Begin("graph-ops");
+
+    ImGui::SliderFloat("Pos X", &position.x, -4.0f, 4.0f);
+    ImGui::SliderFloat("Pos Y", &position.y, -4.0f, 4.0f);
+    ImGui::SliderFloat("Pos Z", &position.z, -4.0f, 4.0f);
+    ImGui::SliderFloat("H", &horizontal_angle, -4.0f, 4.0f);
+    ImGui::SliderFloat("V", &vertical_angle, -4.0f, 4.0f);
 
     if (ImGui::Button("Create Model"))
     {
