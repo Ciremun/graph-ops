@@ -235,9 +235,12 @@ void imgui_update()
     ImGui::Checkbox("Draw Boxes", &draw_boxes);
     if (draw_boxes)
     {
-        static Box model_box(models[0]->box);
-        model_box.update(models[0]->box);
-        model_box.draw();
+        if (selected_model)
+        {
+            static Box model_box(selected_model->box);
+            model_box.update(selected_model->box);
+            model_box.draw();
+        }
 
         static Box x_arrow(arrows[0]->box);
         x_arrow.update(arrows[0]->box);
@@ -254,7 +257,7 @@ void imgui_update()
 
     if (ImGui::Button("Create Model"))
     {
-        const auto &base = models[0];
+        const auto &base = selected_model ? selected_model : models[0];
         Model *model = new Model(matrix_id, color_id, base->vertices, base->uvs, base->normals, base->label);
         models_imgui_draw_order.push_back(model);
         models.push_back(model);
