@@ -156,10 +156,16 @@ void graph_ops_update(double ticks, double dt)
         r.origin = line_start = position;
         r.direction = line_end = mouse_ray_world;
         mouse_ray_line.update(line_start, line_end);
-        if (selected_model && !(x->drag || y->drag || z->drag))
+        if (selected_model)
         {
             for (const auto &arrow : arrows)
-                arrow->drag = intersect(r, arrow->box);
+            {
+                if (intersect(r, arrow->box))
+                {
+                    arrow->drag = true;
+                    break;
+                }
+            }
         }
         if (!(x->drag || y->drag || z->drag))
         {
