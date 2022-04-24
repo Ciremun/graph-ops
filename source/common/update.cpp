@@ -432,7 +432,8 @@ void imgui_update()
             arrow->drag = false;
     }
 
-    ImGui::SetNextWindowSize(ImVec2(0.0f, 520.0f), ImGuiCond_Once);
+    ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(200.0f, 250.0f), ImGuiCond_Once);
     ImGui::Begin("graph-ops");
 
     if (ImGui::Button("Create Model"))

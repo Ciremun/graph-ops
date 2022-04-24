@@ -41,11 +41,11 @@ void process_input(glm::vec3 &position, glm::vec3 const &direction, double dt)
 {
     if (g_focused)
     {
-        double xpos, ypos;
-        glfwGetCursorPos(window, &xpos, &ypos);
+        // double xpos, ypos;
+        // glfwGetCursorPos(window, &xpos, &ypos);
 
-        horizontal_angle += mouse_speed * dt * ((float)width / 2.0f - xpos);
-        vertical_angle += mouse_speed * dt * ((float)height / 2.0f - ypos);
+        // horizontal_angle += mouse_speed * dt * ((float)width / 2.0f - xpos);
+        // vertical_angle += mouse_speed * dt * ((float)height / 2.0f - ypos);
 
         auto right = glm::vec3(glm::sin(horizontal_angle - 3.14 / 2.0), 0.0f,
                                glm::cos(horizontal_angle - 3.14 / 2.0));
@@ -59,7 +59,7 @@ void process_input(glm::vec3 &position, glm::vec3 const &direction, double dt)
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
             position = position - right * static_cast<float>(dt) * speed;
 
-        glfwSetCursorPos(window, (float)width / 2.0f, (float)height / 2.0f);
+        // glfwSetCursorPos(window, (float)width / 2.0f, (float)height / 2.0f);
     }
 }
 
