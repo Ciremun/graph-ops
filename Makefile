@@ -1,6 +1,7 @@
 SOURCES = source/imgui/imgui.cpp source/imgui/imgui_draw.cpp source/imgui/imgui_tables.cpp source/imgui/imgui_widgets.cpp
 SOURCES += source/imgui/backends/imgui_impl_glfw.cpp source/imgui/backends/imgui_impl_opengl3.cpp
 SOURCES += source/common/model.cpp source/common/io.cpp source/common/shader.cpp source/common/update.cpp
+SOURCES += source/common/aabb.cpp source/common/ray.cpp source/common/line.cpp
 SOURCES += source/backends/impl_glfw.cpp
 
 CXXFLAGS = -Isource/imgui -Isource/imgui/backends -Iinclude

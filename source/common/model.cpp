@@ -30,7 +30,7 @@ Model::Model(GLuint matrix_id, GLuint color_id, std::vector<glm::vec3> const &ve
     box.min = min;
     box.max = max;
 
-    box_copy = box;
+    original_box = box;
 }
 
 void Model::draw(glm::mat4 const &view_projection)
@@ -156,4 +156,20 @@ Model *Model::from_obj(GLuint matrix_id, GLuint color_id, const char *path, cons
     fclose(file);
 
     return new Model(matrix_id, color_id, vertices, uvs, normals, label);
+}
+
+void Model::move_by(glm::vec3 const &coords)
+{
+    matrix[3].x += coords.x;
+    matrix[3].y += coords.y;
+    matrix[3].z += coords.z;
+    box = calc_transformed_bounds(original_box, matrix);
+}
+
+void Model::move_to(glm::vec3 const &coords)
+{
+    matrix[3].x = coords.x;
+    matrix[3].y = coords.y;
+    matrix[3].z = coords.z;
+    box = calc_transformed_bounds(original_box, matrix);
 }

@@ -16,7 +16,7 @@
 CXX = em++
 WEB_DIR = docs
 EXE = $(WEB_DIR)/index.html
-SOURCES = source/backends/impl_emscripten.cpp source/common/model.cpp source/common/io.cpp source/common/shader.cpp source/common/update.cpp
+SOURCES = source/backends/impl_emscripten.cpp source/common/model.cpp source/common/io.cpp source/common/shader.cpp source/common/update.cpp source/common/aabb.cpp source/common/ray.cpp source/common/line.cpp
 SOURCES += source/imgui/imgui.cpp source/imgui/imgui_draw.cpp source/imgui/imgui_tables.cpp source/imgui/imgui_widgets.cpp source/imgui/backends/imgui_impl_sdl.cpp source/imgui/backends/imgui_impl_opengl3.cpp
 OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
 UNAME_S := $(shell uname -s)
