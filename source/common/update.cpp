@@ -245,11 +245,9 @@ void graph_ops_update(double ticks, double dt)
         ImVec2 xy = ImGui::GetMousePos();
         glm::vec3 mouse_ray = cast_ray(xy.x, xy.y, view, projection);
         float t = 1000.0f;
-        mouse_ray = position + t * mouse_ray;
-        r.org = position;
-        r.dir = mouse_ray;
-        line_start = glm::vec3(position.x, position.y, position.z);
-        line_end = glm::vec3(mouse_ray.x, mouse_ray.y, mouse_ray.z);
+        glm::vec3 mouse_ray_world = position + t * mouse_ray;
+        r.org = line_start = position;
+        r.dir = line_end = mouse_ray_world;
         intersects = intersect(r, b);
     }
 
