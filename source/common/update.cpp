@@ -191,99 +191,66 @@ void graph_ops_update(double ticks, double dt)
     for (const auto &arrow : arrows)
         arrow->draw(view_projection);
 
+    static glm::vec3 line_start(position.x, position.y, position.z);
+    static glm::vec3 line_end(position.x, position.y, position.z);
+
+    auto mvp = view_projection * glm::mat4(1.0f);
+    glUniformMatrix4fv(matrix_id, 1, GL_FALSE, &mvp[0][0]);
+    glUniform4f(color_id, 1.0f, 1.0f, 1.0f, 1.0f);
+    glBegin(GL_LINES);
+    glVertex3f(line_start.x, line_start.y, line_start.z);
+    glVertex3f(line_end.x, line_end.y, line_end.z);
+    glEnd();
+
+    static ray r;
+    r.org = glm::vec3(0.0f, 0.0f, 0.0f);
+    r.dir = glm::vec3(0.0f, 0.0f, 0.0f);
+    static aabb b;
+    b.min = glm::vec3(-1.0f, -1.0f, -1.0f);
+    b.max = glm::vec3(1.0f, 1.0f, 1.0f);
+    static bool intersects = false;
+    if (intersects)
+        glUniform4f(color_id, 1.0f, 0.0f, 1.0f, 1.0f);
+    else
+        glUniform4f(color_id, 1.0f, 1.0f, 1.0f, 1.0f);
+    glBegin(GL_LINE_LOOP);
+    glVertex3f(b.max.x, b.max.y, b.min.z);
+    glVertex3f(b.min.x, b.max.y, b.min.z);
+    glVertex3f(b.min.x, b.min.y, b.min.z);
+    glVertex3f(b.max.x, b.min.y, b.min.z);
+    glEnd();
+
+    glBegin(GL_LINE_LOOP);
+    glVertex3f(b.max.x, b.min.y, b.max.z);
+    glVertex3f(b.max.x, b.max.y, b.max.z);
+    glVertex3f(b.min.x, b.max.y, b.max.z);
+    glVertex3f(b.min.x, b.min.y, b.max.z);
+    glEnd();
+
+    glBegin(GL_LINE_LOOP);
+    glVertex3f(b.max.x, b.max.y, b.min.z);
+    glVertex3f(b.max.x, b.max.y, b.max.z);
+    glVertex3f(b.min.x, b.max.y, b.max.z);
+    glVertex3f(b.min.x, b.max.y, b.min.z);
+    glEnd();
+
+    glBegin(GL_LINE_LOOP);
+    glVertex3f(b.max.x, b.min.y, b.max.z);
+    glVertex3f(b.min.x, b.min.y, b.max.z);
+    glVertex3f(b.min.x, b.min.y, b.min.z);
+    glVertex3f(b.max.z, b.min.y, b.min.z);
+    glEnd();
     if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
     {
         ImVec2 xy = ImGui::GetMousePos();
         glm::vec3 mouse_ray = cast_ray(xy.x, xy.y, view, projection);
-        float t = 3.0f;
+        float t = 1000.0f;
         mouse_ray = position + t * mouse_ray;
-        auto mvp = view_projection * glm::mat4(1.0f);
-        glUniform4f(color_id, 1.0f, 1.0f, 1.0f, 1.0f);
-        glUniformMatrix4fv(matrix_id, 1, GL_FALSE, &mvp[0][0]);
-        glBegin(GL_LINES);
-        glVertex3f(position.x, position.y - 1.0f, position.z);
-        glVertex3f(mouse_ray.x, mouse_ray.y, mouse_ray.z);
-        glEnd();
-        {
-            ray r;
-            r.org = mouse_ray;
-            r.dir = glm::vec3(0.0f, 0.1f, 0.1f);
-            aabb b;
-            b.min = glm::vec3(-1.0f, -1.0f, -1.0f);
-            b.max = glm::vec3(1.0f, 1.0f, 1.0f);
-            bool intersects = intersect(r, b);
-            if (intersects)
-                glUniform4f(color_id, 1.0f, 0.0f, 1.0f, 1.0f);
-            else
-                glUniform4f(color_id, 1.0f, 1.0f, 1.0f, 1.0f);
-            glBegin(GL_LINE_LOOP);
-            glVertex3f(b.max.x, b.max.y, b.min.z);
-            glVertex3f(b.min.x, b.max.y, b.min.z);
-            glVertex3f(b.min.x, b.min.y, b.min.z);
-            glVertex3f(b.max.x, b.min.y, b.min.z);
-            glEnd();
-
-            glBegin(GL_LINE_LOOP);
-            glVertex3f(b.max.x, b.min.y, b.max.z);
-            glVertex3f(b.max.x, b.max.y, b.max.z);
-            glVertex3f(b.min.x, b.max.y, b.max.z);
-            glVertex3f(b.min.x, b.min.y, b.max.z);
-            glEnd();
-
-            glBegin(GL_LINE_LOOP);
-            glVertex3f(b.max.x, b.max.y, b.min.z);
-            glVertex3f(b.max.x, b.max.y, b.max.z);
-            glVertex3f(b.min.x, b.max.y, b.max.z);
-            glVertex3f(b.min.x, b.max.y, b.min.z);
-            glEnd();
-
-            glBegin(GL_LINE_LOOP);
-            glVertex3f(b.max.x, b.min.y, b.max.z);
-            glVertex3f(b.min.x, b.min.y, b.max.z);
-            glVertex3f(b.min.x, b.min.y, b.min.z);
-            glVertex3f(b.max.z, b.min.y, b.min.z);
-            glEnd();
-        }
-
-        ray r;
-        r.org = mouse_ray;
-        r.dir = glm::vec3(0.0f, 0.1f, 0.1f);
-        aabb b;
-        b.min = glm::vec3(2.0f, 0.0f, 0.0f);
-        b.max = glm::vec3(3.0f, 1.0f, 1.0f);
-
-        bool intersects = intersect(r, b);
-        if (intersects)
-            glUniform4f(color_id, 1.0f, 0.0f, 1.0f, 1.0f);
-        else
-            glUniform4f(color_id, 1.0f, 1.0f, 1.0f, 1.0f);
-        glBegin(GL_LINE_LOOP);
-        glVertex3f(b.max.x, b.max.y, b.min.z);
-        glVertex3f(b.min.x, b.max.y, b.min.z);
-        glVertex3f(b.min.x, b.min.y, b.min.z);
-        glVertex3f(b.max.x, b.min.y, b.min.z);
-        glEnd();
-
-        glBegin(GL_LINE_LOOP);
-        glVertex3f(b.max.x, b.min.y, b.max.z);
-        glVertex3f(b.max.x, b.max.y, b.max.z);
-        glVertex3f(b.min.x, b.max.y, b.max.z);
-        glVertex3f(b.min.x, b.min.y, b.max.z);
-        glEnd();
-
-        glBegin(GL_LINE_LOOP);
-        glVertex3f(b.max.x, b.max.y, b.min.z);
-        glVertex3f(b.max.x, b.max.y, b.max.z);
-        glVertex3f(b.min.x, b.max.y, b.max.z);
-        glVertex3f(b.min.x, b.max.y, b.min.z);
-        glEnd();
-
-        glBegin(GL_LINE_LOOP);
-        glVertex3f(b.max.x, b.min.y, b.max.z);
-        glVertex3f(b.min.x, b.min.y, b.max.z);
-        glVertex3f(b.min.x, b.min.y, b.min.z);
-        glVertex3f(b.max.x, b.min.y, b.min.z);
-        glEnd();
+        r.org = position;
+        r.dir = mouse_ray;
+        line_start = glm::vec3(position.x, position.y, position.z);
+        line_end = glm::vec3(mouse_ray.x, mouse_ray.y, mouse_ray.z);
+        intersects = intersect(r, b);
     }
 
     process_input(position, direction, dt);
