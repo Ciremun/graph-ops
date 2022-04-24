@@ -39,6 +39,137 @@ struct ray
     glm::vec3 dir;
 };
 
+struct Line
+{
+    unsigned int VBO, VAO;
+    std::vector<float> vertices;
+
+    Line(glm::vec3 start, glm::vec3 end)
+    {
+        vertices = {
+            start.x,
+            start.y,
+            start.z,
+            end.x,
+            end.y,
+            end.z,
+        };
+
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+        glBindVertexArray(VAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, 24, vertices.data(), GL_DYNAMIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+        glEnableVertexAttribArray(0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    void update(glm::vec3 const &start, glm::vec3 const &end)
+    {
+        vertices = {
+            start.x,
+            start.y,
+            start.z,
+            end.x,
+            end.y,
+            end.z,
+        };
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, 24, vertices.data());
+    }
+
+    void draw()
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+        glEnableVertexAttribArray(0);
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_LINES, 0, 2);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    ~Line()
+    {
+        glDeleteVertexArrays(1, &VAO);
+        glDeleteBuffers(1, &VBO);
+    }
+};
+
+struct Box
+{
+    unsigned int VBO, VAO;
+    std::vector<float> vertices;
+
+    Box(aabb b)
+    {
+        vertices = {
+            b.min.x, b.min.y, b.min.z,
+            b.max.x, b.min.y, b.min.z,
+            b.max.x, b.max.y, b.min.z,
+            b.min.x, b.max.y, b.min.z,
+
+            // Loop 2: XY Z (max)
+            b.min.x, b.min.y, b.max.z,
+            b.max.x, b.min.y, b.max.z,
+            b.max.x, b.max.y, b.max.z,
+            b.min.x, b.max.y, b.max.z,
+
+            // Lists:
+            // 1
+            b.min.x, b.min.y, b.min.z,
+            b.min.x, b.min.y, b.max.z,
+            // 2
+            b.max.x, b.min.y, b.min.z,
+            b.max.x, b.min.y, b.max.z,
+            // 3
+            b.max.x, b.max.y, b.min.z,
+            b.max.x, b.max.y, b.max.z,
+            // 4
+            b.min.x, b.max.y, b.min.z,
+            b.min.x, b.max.y, b.max.z,
+        };
+
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+        glBindVertexArray(VAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+        glEnableVertexAttribArray(0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    void draw()
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+        glEnableVertexAttribArray(0);
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_LINE_LOOP, 0, 4);
+        glDrawArrays(GL_LINE_LOOP, 4, 4);
+        glDrawArrays(GL_LINES, 8, 8);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    ~Box()
+    {
+        glDeleteVertexArrays(1, &VAO);
+        glDeleteBuffers(1, &VBO);
+    }
+};
+
 bool intersect(ray r, aabb b)
 {
     // r.dir is unit direction vector of ray
@@ -197,10 +328,9 @@ void graph_ops_update(double ticks, double dt)
     auto mvp = view_projection * glm::mat4(1.0f);
     glUniformMatrix4fv(matrix_id, 1, GL_FALSE, &mvp[0][0]);
     glUniform4f(color_id, 1.0f, 1.0f, 1.0f, 1.0f);
-    glBegin(GL_LINES);
-    glVertex3f(line_start.x, line_start.y, line_start.z);
-    glVertex3f(line_end.x, line_end.y, line_end.z);
-    glEnd();
+
+    static Line mouse_ray_line(line_start, line_end);
+    mouse_ray_line.draw();
 
     static ray r;
     r.org = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -213,33 +343,10 @@ void graph_ops_update(double ticks, double dt)
         glUniform4f(color_id, 1.0f, 0.0f, 1.0f, 1.0f);
     else
         glUniform4f(color_id, 1.0f, 1.0f, 1.0f, 1.0f);
-    glBegin(GL_LINE_LOOP);
-    glVertex3f(b.max.x, b.max.y, b.min.z);
-    glVertex3f(b.min.x, b.max.y, b.min.z);
-    glVertex3f(b.min.x, b.min.y, b.min.z);
-    glVertex3f(b.max.x, b.min.y, b.min.z);
-    glEnd();
 
-    glBegin(GL_LINE_LOOP);
-    glVertex3f(b.max.x, b.min.y, b.max.z);
-    glVertex3f(b.max.x, b.max.y, b.max.z);
-    glVertex3f(b.min.x, b.max.y, b.max.z);
-    glVertex3f(b.min.x, b.min.y, b.max.z);
-    glEnd();
+    static Box box(b);
+    box.draw();
 
-    glBegin(GL_LINE_LOOP);
-    glVertex3f(b.max.x, b.max.y, b.min.z);
-    glVertex3f(b.max.x, b.max.y, b.max.z);
-    glVertex3f(b.min.x, b.max.y, b.max.z);
-    glVertex3f(b.min.x, b.max.y, b.min.z);
-    glEnd();
-
-    glBegin(GL_LINE_LOOP);
-    glVertex3f(b.max.x, b.min.y, b.max.z);
-    glVertex3f(b.min.x, b.min.y, b.max.z);
-    glVertex3f(b.min.x, b.min.y, b.min.z);
-    glVertex3f(b.max.z, b.min.y, b.min.z);
-    glEnd();
     if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
     {
         ImVec2 xy = ImGui::GetMousePos();
@@ -249,6 +356,7 @@ void graph_ops_update(double ticks, double dt)
         r.org = line_start = position;
         r.dir = line_end = mouse_ray_world;
         intersects = intersect(r, b);
+        mouse_ray_line.update(line_start, line_end);
     }
 
     process_input(position, direction, dt);

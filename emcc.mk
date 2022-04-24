@@ -47,7 +47,7 @@ LDFLAGS += -s NO_FILESYSTEM=1
 CPPFLAGS += -DIMGUI_DISABLE_FILE_FUNCTIONS
 endif
 ifeq ($(USE_FILE_SYSTEM), 1)
-LDFLAGS += -s MAX_WEBGL_VERSION=2 -s MIN_WEBGL_VERSION=2 --no-heap-copy --preload-file models/ --preload-file source/shaders/ --preload-file source/imgui/fonts/Roboto-Medium.ttf
+LDFLAGS += -sFULL_ES3 -s MAX_WEBGL_VERSION=2 -s MIN_WEBGL_VERSION=2 --no-heap-copy --preload-file models/ --preload-file source/shaders/ --preload-file source/imgui/fonts/Roboto-Medium.ttf
 endif
 
 ##---------------------------------------------------------------------
