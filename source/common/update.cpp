@@ -62,7 +62,13 @@ void graph_ops_init()
     time_id = glGetUniformLocation(program_id, "u_time");
     color_id = glGetUniformLocation(program_id, "u_color");
 
+    models.push_back(Model::from_obj(matrix_id, color_id, "models/sphere.obj", "Sphere"));
     models.push_back(Model::from_obj(matrix_id, color_id, "models/link.obj", "Link"));
+
+    models[0]->color = glm::vec4(1.0f);
+    models[0]->move_by(glm::vec3(0.0f, 0.0f, -2.0f));
+
+    models[1]->color = glm::vec4(1.0f, 0.0f, 1.0f, 0.8f);
 
     Model *base = Model::from_obj(matrix_id, color_id, "models/axis_arrow.obj", "Z axis arrow");
 
@@ -154,8 +160,7 @@ void graph_ops_update(double ticks, double dt)
         mouse_ray.origin = line_start = position;
         mouse_ray.direction = line_end = position + t * casted_ray;
         mouse_ray_line.update(line_start, line_end);
-        static FastRay fast_ray;
-        fast_ray = precompute_ray_inv(mouse_ray);
+        FastRay fast_ray = precompute_ray_inv(mouse_ray);
         if (selected_model)
         {
             for (const auto &arrow : arrows)
@@ -261,7 +266,7 @@ void imgui_update()
         z_arrow.draw();
     }
 
-    if (ImGui::Button("Create Model"))
+    if (ImGui::Button("Copy Selected Model"))
     {
         const auto &base = selected_model ? selected_model : models[0];
         Model *model = new Model(matrix_id, color_id, base->vertices, base->uvs, base->normals, base->label);
