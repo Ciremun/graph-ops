@@ -149,17 +149,18 @@ void graph_ops_update(double ticks, double dt)
     {
         ImVec2 xy = ImGui::GetMousePos();
         float t = 1000.0f;
+        glm::vec3 casted_ray = cast_ray(xy.x, xy.y, width, height, view, projection);
         Ray mouse_ray;
         mouse_ray.origin = line_start = position;
-        mouse_ray.direction = line_end = position + t * cast_ray(xy.x, xy.y, width, height, view, projection);
+        mouse_ray.direction = line_end = position + t * casted_ray;
         mouse_ray_line.update(line_start, line_end);
-        static FastRay r;
-        r = precompute_ray_inv(mouse_ray);
+        static FastRay fast_ray;
+        fast_ray = precompute_ray_inv(mouse_ray);
         if (selected_model)
         {
             for (const auto &arrow : arrows)
             {
-                if (intersect(r, arrow->box))
+                if (intersect(fast_ray, arrow->box))
                 {
                     arrow->drag = true;
                     break;
@@ -171,7 +172,7 @@ void graph_ops_update(double ticks, double dt)
             selected_model = NULL;
             for (const auto &model : models)
             {
-                if (intersect(r, model->box))
+                if (intersect(fast_ray, model->box))
                 {
                     selected_model = model;
                     update_model(selected_model);
