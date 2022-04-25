@@ -142,20 +142,19 @@ void graph_ops_update(double ticks, double dt)
     static Line mouse_ray_line(line_start, line_end);
     mouse_ray_line.draw();
 
-    static Ray r;
-
     auto &x = arrows[0];
     auto &y = arrows[1];
     auto &z = arrows[2];
     if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && !ImGui::IsAnyItemActive() && !(x->drag || y->drag || z->drag))
     {
         ImVec2 xy = ImGui::GetMousePos();
-        glm::vec3 mouse_ray = cast_ray(xy.x, xy.y, width, height, view, projection);
         float t = 1000.0f;
-        glm::vec3 mouse_ray_world = position + t * mouse_ray;
-        r.origin = line_start = position;
-        r.direction = line_end = mouse_ray_world;
+        Ray mouse_ray;
+        mouse_ray.origin = line_start = position;
+        mouse_ray.direction = line_end = position + t * cast_ray(xy.x, xy.y, width, height, view, projection);
         mouse_ray_line.update(line_start, line_end);
+        static FastRay r;
+        r = precompute_ray_inv(mouse_ray);
         if (selected_model)
         {
             for (const auto &arrow : arrows)

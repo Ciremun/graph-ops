@@ -1,40 +1,42 @@
 #include "ray.hpp"
 
-bool intersect(Ray r, AABB b)
+FastRay precompute_ray_inv(Ray const &ray)
 {
-    // r.direction is unit direction vector of ray
-    glm::vec3 dirfrac;
-    dirfrac.x = 1.0f / r.direction.x;
-    dirfrac.y = 1.0f / r.direction.y;
-    dirfrac.z = 1.0f / r.direction.z;
-    // lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
-    // r.origin is origin of ray
-    float t1 = (b.min.x - r.origin.x) * dirfrac.x;
-    float t2 = (b.max.x - r.origin.x) * dirfrac.x;
-    float t3 = (b.min.y - r.origin.y) * dirfrac.y;
-    float t4 = (b.max.y - r.origin.y) * dirfrac.y;
-    float t5 = (b.min.z - r.origin.z) * dirfrac.z;
-    float t6 = (b.max.z - r.origin.z) * dirfrac.z;
+    FastRay r;
+    r.origin = ray.origin;
+    r.inv_direction = glm::vec3(1.0f / ray.direction.x, 1.0f / ray.direction.y, 1.0f / ray.direction.z);
+    return r;
+}
 
-    float tmin = glm::max(glm::max(glm::min(t1, t2), glm::min(t3, t4)), glm::min(t5, t6));
-    float tmax = glm::min(glm::min(glm::max(t1, t2), glm::max(t3, t4)), glm::max(t5, t6));
+// https://tavianator.com/cgit/dimension.git/tree/libdimension/bvh/bvh.c#n194
+bool intersect(FastRay r, AABB b)
+{
+    // This is actually correct, even though it appears not to handle edge cases
+    // (ray.n.{x,y,z} == 0).  It works because the infinities that result from
+    // dividing by zero will still behave correctly in the comparisons.  Rays
+    // which are parallel to an axis and outside the box will have tmin == inf
+    // or tmax == -inf, while rays inside the box will have tmin and tmax
+    // unchanged.
 
-    // if tmax < 0, ray (line) is intersecting AABB, but the whole AABB is behind us
-    if (tmax < 0)
-    {
-        // t = tmax;
-        return false;
-    }
+    float tx1 = (b.min.x - r.origin.x) * r.inv_direction.x;
+    float tx2 = (b.max.x - r.origin.x) * r.inv_direction.x;
 
-    // if tmin > tmax, ray doesn't intersect AABB
-    if (tmin > tmax)
-    {
-        // t = tmax;
-        return false;
-    }
+    float tmin = glm::min(tx1, tx2);
+    float tmax = glm::max(tx1, tx2);
 
-    // t = tmin;
-    return true;
+    float ty1 = (b.min.y - r.origin.y) * r.inv_direction.y;
+    float ty2 = (b.max.y - r.origin.y) * r.inv_direction.y;
+
+    tmin = glm::max(tmin, glm::min(ty1, ty2));
+    tmax = glm::min(tmax, glm::max(ty1, ty2));
+
+    float tz1 = (b.min.z - r.origin.z) * r.inv_direction.z;
+    float tz2 = (b.max.z - r.origin.z) * r.inv_direction.z;
+
+    tmin = glm::max(tmin, glm::min(tz1, tz2));
+    tmax = glm::min(tmax, glm::max(tz1, tz2));
+
+    return tmax >= glm::max(0.0f, tmin);
 }
 
 glm::vec3 cast_ray(double xpos, double ypos, int width, int height, glm::mat4 const &view, glm::mat4 const &projection)
