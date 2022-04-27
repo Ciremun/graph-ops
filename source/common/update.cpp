@@ -58,7 +58,7 @@ void graph_ops_init()
     glDepthFunc(GL_LESS);
 
     program_id = load_shaders();
-    matrix_id = glGetUniformLocation(program_id, "MVP");
+    matrix_id = glGetUniformLocation(program_id, "u_mvp");
     time_id = glGetUniformLocation(program_id, "u_time");
     color_id = glGetUniformLocation(program_id, "u_color");
 
