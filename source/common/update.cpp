@@ -241,10 +241,10 @@ void imgui_update()
     }
 
     ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
-    ImGui::SetNextWindowSize(ImVec2(260.0f, 260.0f), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(280.0f, 280.0f), ImGuiCond_Once);
     ImGui::Begin("graph-ops");
 
-    static bool draw_boxes = false;
+    static bool draw_boxes = true;
     ImGui::Checkbox("Draw Boxes", &draw_boxes);
     if (draw_boxes)
     {
@@ -290,8 +290,7 @@ void imgui_update()
     {
         auto &model = models_imgui_draw_order[i];
         ImGui::PushID(i);
-        if (i == 0)
-            ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+        ImGui::SetNextItemOpen(model == selected_model, ImGuiCond_Once);
         if (ImGui::CollapsingHeader(model->label, ImGuiTreeNodeFlags_None))
         {
             if (ImGui::SliderFloat("X", &model->matrix[3].x, -24.0f, 24.0f))
