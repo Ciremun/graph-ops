@@ -68,7 +68,7 @@ void graph_ops_init()
     selected_model = models[1];
 
     models[0]->color = glm::vec4(1.0f);
-    models[0]->move_by(glm::vec3(0.0f, 0.0f, -2.0f));
+    models[0]->move_by(glm::vec3(0.0f, 0.0f, -2.5f));
 
     models[1]->color = glm::vec4(1.0f, 0.0f, 1.0f, 0.8f);
 
