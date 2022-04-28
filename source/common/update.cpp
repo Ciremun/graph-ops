@@ -65,6 +65,8 @@ void graph_ops_init()
     models.push_back(Model::from_obj(matrix_id, color_id, "models/sphere.obj", "Sphere"));
     models.push_back(Model::from_obj(matrix_id, color_id, "models/link.obj", "Link"));
 
+    selected_model = models[1];
+
     models[0]->color = glm::vec4(1.0f);
     models[0]->move_by(glm::vec3(0.0f, 0.0f, -2.0f));
 
