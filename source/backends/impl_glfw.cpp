@@ -61,6 +61,11 @@ void process_input(glm::vec3 &position, glm::vec3 &direction, double dt)
             position = position + right * static_cast<float>(dt) * speed;
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
             position = position - right * static_cast<float>(dt) * speed;
+
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+            position.y -= static_cast<float>(dt) * speed;
+        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+            position.y += static_cast<float>(dt) * speed;
     }
 }
 

@@ -37,6 +37,10 @@ void process_input(glm::vec3 &position, glm::vec3 &direction, double dt)
         position = position + right * static_cast<float>(dt) * speed;
     if (keys[SDL_SCANCODE_A])
         position = position - right * static_cast<float>(dt) * speed;
+    if (keys[SDL_SCANCODE_LSHIFT])
+        position.y -= static_cast<float>(dt) * speed;
+    if (keys[SDL_SCANCODE_SPACE])
+        position.y += static_cast<float>(dt) * speed;
 }
 
 static void main_loop(void *);
