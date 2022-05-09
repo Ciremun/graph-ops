@@ -5,4 +5,4 @@
 extern int width;
 extern int height;
 
-void process_input(glm::vec3 &position, glm::vec3 const &direction, double dt);
+void process_input(glm::vec3 &position, glm::vec3 &direction, double dt);

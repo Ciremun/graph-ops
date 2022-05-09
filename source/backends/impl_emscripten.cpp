@@ -24,7 +24,7 @@ EM_JS(int, mobile, (), {
 SDL_Window *g_Window = NULL;
 SDL_GLContext g_GLContext = NULL;
 
-void process_input(glm::vec3 &position, glm::vec3 const &direction, double dt)
+void process_input(glm::vec3 &position, glm::vec3 &direction, double dt)
 {
     auto right = glm::vec3(glm::sin(horizontal_angle - 3.14 / 2.0), 0.0f,
                            glm::cos(horizontal_angle - 3.14 / 2.0));

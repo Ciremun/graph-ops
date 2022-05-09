@@ -19,7 +19,7 @@ GLuint color_id;
 
 glm::vec3 position = glm::vec3(.0f, 2.0f, 2.0f);
 float horizontal_angle = 3.15f;
-float vertical_angle = -0.63f;
+float vertical_angle = -.63f;
 float speed = 5.0f;
 float mouse_speed = 0.1f;
 
@@ -29,15 +29,6 @@ std::vector<Model *>::iterator models_mid_it;
 std::vector<Model *> models;
 std::vector<Model *> arrows;
 Model *selected_model = NULL;
-
-void update_model(Model *model)
-{
-    auto &xyz = model->matrix[3];
-    arrows[0]->move_to(glm::vec3(xyz.x + 0.29f, xyz.y, xyz.z));
-    arrows[1]->move_to(glm::vec3(xyz.x, xyz.y + 0.29f, xyz.z));
-    arrows[2]->move_to(glm::vec3(xyz.x, xyz.y, xyz.z + 0.29f));
-    model->box = calc_transformed_bounds(model->original_box, model->matrix);
-};
 
 void sort_models()
 {
@@ -117,6 +108,22 @@ void graph_ops_update(double ticks, double dt)
     auto view = glm::lookAt(position, position + direction, glm::vec3(0.0f, 1.0f, 0.0f));
     auto view_projection = projection * view;
 
+    process_input(position, direction, dt);
+
+    // for (auto &model : models)
+    // {
+    //     if (model == selected_model)
+    //         continue;
+    //     glm::vec3 dir = position - glm::vec3(model->matrix[3].x, model->matrix[3].y, model->matrix[3].z);
+    //     dir = glm::normalize(dir);
+    //     model->move_by(dir * 2.0f * (float)dt);
+    // }
+
+    // position.y -= 5.0f * dt;
+
+    // if (position.y < 0.0f)
+    //     position.y = 0.0f;
+
     for (auto model_it = std::begin(models); model_it != models_mid_it; ++model_it)
     {
         auto model = *model_it;
@@ -188,8 +195,6 @@ void graph_ops_update(double ticks, double dt)
             }
         }
     }
-
-    process_input(position, direction, dt);
 }
 
 void imgui_update()

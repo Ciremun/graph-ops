@@ -36,7 +36,7 @@ static void glfw_error_callback(int error, const char *description)
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
-void process_input(glm::vec3 &position, glm::vec3 const &direction, double dt)
+void process_input(glm::vec3 &position, glm::vec3 &direction, double dt)
 {
     if (g_focused)
     {
@@ -45,6 +45,10 @@ void process_input(glm::vec3 &position, glm::vec3 const &direction, double dt)
 
         // horizontal_angle += mouse_speed * dt * ((float)width / 2.0f - xpos);
         // vertical_angle += mouse_speed * dt * ((float)height / 2.0f - ypos);
+
+        // glfwSetCursorPos(window, (float)width / 2.0f, (float)height / 2.0f);
+
+        // direction.y = 0.0f;
 
         auto right = glm::vec3(glm::sin(horizontal_angle - 3.14 / 2.0), 0.0f,
                                glm::cos(horizontal_angle - 3.14 / 2.0));
@@ -57,8 +61,6 @@ void process_input(glm::vec3 &position, glm::vec3 const &direction, double dt)
             position = position + right * static_cast<float>(dt) * speed;
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
             position = position - right * static_cast<float>(dt) * speed;
-
-        // glfwSetCursorPos(window, (float)width / 2.0f, (float)height / 2.0f);
     }
 }
 

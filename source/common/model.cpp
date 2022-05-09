@@ -172,3 +172,12 @@ void Model::move_to(glm::vec3 const &coords)
     matrix[3].z = coords.z;
     box = calc_transformed_bounds(original_box, matrix);
 }
+
+void update_model(Model *model)
+{
+    auto &xyz = model->matrix[3];
+    arrows[0]->move_to(glm::vec3(xyz.x + 0.29f, xyz.y, xyz.z));
+    arrows[1]->move_to(glm::vec3(xyz.x, xyz.y + 0.29f, xyz.z));
+    arrows[2]->move_to(glm::vec3(xyz.x, xyz.y, xyz.z + 0.29f));
+    model->box = calc_transformed_bounds(model->original_box, model->matrix);
+}
