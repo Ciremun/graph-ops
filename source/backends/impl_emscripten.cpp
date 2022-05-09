@@ -26,6 +26,19 @@ SDL_GLContext g_GLContext = NULL;
 
 void process_input(glm::vec3 &position, glm::vec3 &direction, double dt)
 {
+    static int prev_mouse_x = 0, prev_mouse_y = 0;
+    int mouse_x, mouse_y;
+    const Uint32 mouse_state = SDL_GetMouseState(&mouse_x, &mouse_y);
+    if (mouse_state & SDL_BUTTON_RMASK)
+    {
+        int diff_x = mouse_x - prev_mouse_x;
+        int diff_y = mouse_y - prev_mouse_y;
+        horizontal_angle += -diff_x * dt / 5.0f;
+        vertical_angle += -diff_y * dt / 5.0f;
+    }
+    prev_mouse_x = mouse_x;
+    prev_mouse_y = mouse_y;
+
     auto right = glm::vec3(glm::sin(horizontal_angle - 3.14 / 2.0), 0.0f,
                            glm::cos(horizontal_angle - 3.14 / 2.0));
     const Uint8 *keys = SDL_GetKeyboardState(0);
