@@ -110,19 +110,19 @@ void graph_ops_update(double ticks, double dt)
 
     process_input(position, direction, dt);
 
-    // for (auto &model : models)
-    // {
-    //     if (model == selected_model)
-    //         continue;
-    //     glm::vec3 dir = position - glm::vec3(model->matrix[3].x, model->matrix[3].y, model->matrix[3].z);
-    //     dir = glm::normalize(dir);
-    //     model->move_by(dir * 2.0f * (float)dt);
-    // }
+    for (auto &model : models)
+    {
+        if (model == selected_model)
+            continue;
+        glm::vec3 dir = position - glm::vec3(model->matrix[3].x, model->matrix[3].y, model->matrix[3].z);
+        dir = glm::normalize(dir);
+        model->move_by(dir * 2.0f * (float)dt);
+    }
 
-    // position.y -= 5.0f * dt;
+    position.y -= 5.0f * dt;
 
-    // if (position.y < 0.0f)
-    //     position.y = 0.0f;
+    if (position.y < 0.0f)
+        position.y = 0.0f;
 
     for (auto model_it = std::begin(models); model_it != models_mid_it; ++model_it)
     {

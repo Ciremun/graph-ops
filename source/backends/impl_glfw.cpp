@@ -48,7 +48,7 @@ void process_input(glm::vec3 &position, glm::vec3 &direction, double dt)
 
         // glfwSetCursorPos(window, (float)width / 2.0f, (float)height / 2.0f);
 
-        // direction.y = 0.0f;
+        direction.y = 0.0f;
 
         auto right = glm::vec3(glm::sin(horizontal_angle - 3.14 / 2.0), 0.0f,
                                glm::cos(horizontal_angle - 3.14 / 2.0));

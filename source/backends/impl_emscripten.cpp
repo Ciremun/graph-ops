@@ -39,6 +39,8 @@ void process_input(glm::vec3 &position, glm::vec3 &direction, double dt)
     prev_mouse_x = mouse_x;
     prev_mouse_y = mouse_y;
 
+    direction.y = 0.0f;
+
     auto right = glm::vec3(glm::sin(horizontal_angle - 3.14 / 2.0), 0.0f,
                            glm::cos(horizontal_angle - 3.14 / 2.0));
     const Uint8 *keys = SDL_GetKeyboardState(0);
