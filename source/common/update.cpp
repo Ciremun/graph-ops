@@ -19,7 +19,7 @@ GLuint color_id;
 
 glm::vec3 position = glm::vec3(.0f, 2.0f, 2.0f);
 float horizontal_angle = 3.15f;
-float vertical_angle = -.63f;
+float vertical_angle = -.2f;
 float speed = 5.0f;
 float mouse_speed = 0.1f;
 
@@ -56,11 +56,12 @@ void graph_ops_init()
     models.push_back(Model::from_obj(matrix_id, color_id, "models/sphere.obj", "Sphere"));
     models.push_back(Model::from_obj(matrix_id, color_id, "models/link.obj", "Link"));
 
-    selected_model = models[1];
+    selected_model = models[0];
 
     models[0]->color = glm::vec4(1.0f);
     models[0]->move_by(glm::vec3(0.0f, 0.0f, -2.5f));
 
+    models[1]->move_by(glm::vec3(0.0f, -.5f, 0.0f));
     models[1]->color = glm::vec4(1.0f, 0.0f, 1.0f, 0.8f);
 
     Model *base = Model::from_obj(matrix_id, color_id, "models/axis_arrow.obj", "Z axis arrow");
@@ -69,17 +70,14 @@ void graph_ops_init()
     x_axis_arrow->color = glm::vec4(1.0f, .0f, 0.0f, 1.0f);
     x_axis_arrow->matrix = glm::rotate(x_axis_arrow->matrix, glm::radians(270.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     x_axis_arrow->rotation.z = 270.0f;
-    x_axis_arrow->matrix[3].x = 0.29f;
 
     Model *y_axis_arrow = new Model(matrix_id, color_id, base->vertices, base->uvs, base->normals, "Y axis arrow");
     y_axis_arrow->color = glm::vec4(.0f, 1.0f, 0.0f, 1.0f);
-    y_axis_arrow->matrix[3].y = 0.29f;
 
     Model *z_axis_arrow = base;
     z_axis_arrow->color = glm::vec4(.0f, .0f, 1.0f, 1.0f);
     z_axis_arrow->matrix = glm::rotate(z_axis_arrow->matrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     z_axis_arrow->rotation.z = 90.0f;
-    z_axis_arrow->matrix[3].z = 0.29f;
 
     x_axis_arrow->box = calc_transformed_bounds(x_axis_arrow->original_box, x_axis_arrow->matrix);
     y_axis_arrow->box = calc_transformed_bounds(y_axis_arrow->original_box, y_axis_arrow->matrix);
@@ -88,6 +86,8 @@ void graph_ops_init()
     arrows.push_back(x_axis_arrow);
     arrows.push_back(y_axis_arrow);
     arrows.push_back(z_axis_arrow);
+
+    update_model(models[0]);
 
     sort_models();
     models_imgui_draw_order = models;
@@ -105,7 +105,8 @@ void graph_ops_update(double ticks, double dt)
                   glm::sin(vertical_angle),
                   glm::cos(vertical_angle) * glm::cos(horizontal_angle));
 
-    auto view = glm::lookAt(position, position + direction, glm::vec3(0.0f, 1.0f, 0.0f));
+    static const glm::vec3 up(0.0f, 1.0f, 0.0f);
+    auto view = glm::lookAt(position, position + direction, up);
     auto view_projection = projection * view;
 
     process_input(position, direction, dt);
@@ -114,8 +115,11 @@ void graph_ops_update(double ticks, double dt)
     {
         if (model == selected_model)
             continue;
-        glm::vec3 dir = position - glm::vec3(model->matrix[3].x, model->matrix[3].y, model->matrix[3].z);
+        glm::vec3 model_pos = glm::vec3(model->matrix[3].x, model->matrix[3].y, model->matrix[3].z);
+        glm::vec3 dir = position - model_pos;
+        dir.y = .0f;
         dir = glm::normalize(dir);
+        model->matrix = glm::inverse(glm::lookAt(model_pos, position, up));
         model->move_by(dir * 2.0f * (float)dt);
     }
 

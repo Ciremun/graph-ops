@@ -200,7 +200,7 @@ Module['FS_createPath']("/source/imgui", "fonts", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/models/axis_arrow.obj", "start": 0, "end": 14453}, {"filename": "/models/link.obj", "start": 14453, "end": 23629}, {"filename": "/models/sphere.obj", "start": 23629, "end": 97017}, {"filename": "/source/shaders/frag.glsl", "start": 97017, "end": 97170}, {"filename": "/source/shaders/vert.glsl", "start": 97170, "end": 97355}, {"filename": "/source/imgui/fonts/Roboto-Medium.ttf", "start": 97355, "end": 259943}], "remote_package_size": 259943, "package_uuid": "334e4206-cac4-4eda-908e-5d063585574e"});
+    loadPackage({"files": [{"filename": "/models/axis_arrow.obj", "start": 0, "end": 14453}, {"filename": "/models/link.obj", "start": 14453, "end": 23629}, {"filename": "/models/sphere.obj", "start": 23629, "end": 97017}, {"filename": "/source/shaders/frag.glsl", "start": 97017, "end": 97170}, {"filename": "/source/shaders/vert.glsl", "start": 97170, "end": 97355}, {"filename": "/source/imgui/fonts/Roboto-Medium.ttf", "start": 97355, "end": 259943}], "remote_package_size": 259943, "package_uuid": "47c6f653-4ba5-4c30-9e1e-861dd7dde6fa"});
 
   })();
 
