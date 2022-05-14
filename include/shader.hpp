@@ -8,4 +8,4 @@
 #endif // __EMSCRIPTEN__
 
 void compile_shader(GLuint shader_id, void *shader_source);
-GLuint load_shaders();
+GLuint load_shaders(const char *vertex_path, const char *fragment_path);

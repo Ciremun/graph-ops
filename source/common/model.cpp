@@ -1,3 +1,6 @@
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #include "model.hpp"
 
 Model::Model(GLuint matrix_id, GLuint color_id, std::vector<glm::vec3> const &vertices, std::vector<glm::vec2> const &uvs, std::vector<glm::vec3> const &normals, const char *label)
@@ -35,6 +38,9 @@ Model::Model(GLuint matrix_id, GLuint color_id, std::vector<glm::vec3> const &ve
 
 void Model::draw(glm::mat4 const &view_projection)
 {
+    if (texture_id)
+        glUseProgram(program_id);
+
     auto mvp = view_projection * matrix;
     glUniformMatrix4fv(matrix_id, 1, GL_FALSE, &mvp[0][0]);
     glUniform4f(color_id, color.r, color.g, color.b, color.a);
@@ -50,9 +56,27 @@ void Model::draw(glm::mat4 const &view_projection)
         (void *)0 // array buffer offset
     );
 
+    if (texture_id)
+    {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture_id);
+        glEnableVertexAttribArray(1);
+        glBindBuffer(GL_ARRAY_BUFFER, uv_buffer);
+        glVertexAttribPointer(
+            1,
+            2,
+            GL_FLOAT,
+            GL_FALSE,
+            0,
+            (void *)0);
+    }
+
     glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 
     glDisableVertexAttribArray(0);
+
+    if (texture_id)
+        glDisableVertexAttribArray(1);
 }
 
 Model *Model::from_obj(GLuint matrix_id, GLuint color_id, const char *path, const char *label)
@@ -180,4 +204,25 @@ void update_model(Model *model)
     arrows[1]->move_to(glm::vec3(xyz.x, xyz.y + 0.29f, xyz.z));
     arrows[2]->move_to(glm::vec3(xyz.x, xyz.y, xyz.z + 0.29f));
     model->box = calc_transformed_bounds(model->original_box, model->matrix);
+}
+
+void Model::texture_from_file(const char *path)
+{
+    int x, y, c;
+    void *earth = stbi_load("assets/earth.jpg", &x, &y, &c, 0);
+
+    glGenBuffers(1, &uv_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, uv_buffer);
+    glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(float) * 2, &uvs[0], GL_STATIC_DRAW);
+
+    glGenTextures(1, &texture_id);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, earth);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    program_id = load_shaders("source/shaders/texture.vert.glsl", "source/shaders/texture.frag.glsl");
+    matrix_id = glGetUniformLocation(program_id, "u_mvp");
+    time_id = glGetUniformLocation(program_id, "u_time");
+    color_id = glGetUniformLocation(program_id, "u_color");
 }

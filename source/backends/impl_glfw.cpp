@@ -137,13 +137,13 @@ int main()
         dt = current_frame - last_frame;
         last_frame = current_frame;
 
-#ifndef NDEBUG
-        if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
-        {
-            glDeleteProgram(program_id);
-            program_id = load_shaders();
-        }
-#endif
+// #ifndef NDEBUG
+//         if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+//         {
+//             glDeleteProgram(program_id);
+//             program_id = load_shaders();
+//         }
+// #endif
 
         graph_ops_update(current_frame, dt);
 

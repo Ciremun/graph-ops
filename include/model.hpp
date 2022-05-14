@@ -7,11 +7,16 @@
 
 #include "aabb.hpp"
 #include "gl_base.hpp"
+#include "shader.hpp"
 
 struct Model
 {
+    GLuint program_id = 0;
     GLuint matrix_id;
+    GLuint time_id;
     GLuint color_id;
+    GLuint texture_id = 0;
+    GLuint uv_buffer = 0;
     GLuint vertex_buffer;
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec2> uvs;
@@ -33,6 +38,7 @@ struct Model
     void move_to(glm::vec3 const &coords);
     void move_by(glm::vec3 const &coords);
     void draw(glm::mat4 const &view_projection);
+    void texture_from_file(const char *path);
 };
 
 extern std::vector<Model *> arrows;

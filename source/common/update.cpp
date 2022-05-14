@@ -22,6 +22,7 @@ float horizontal_angle = 3.15f;
 float vertical_angle = -.2f;
 float speed = 5.0f;
 float mouse_speed = 0.1f;
+bool draw_boxes = true;
 
 glm::highp_mat4 projection;
 std::vector<Model *> models_imgui_draw_order;
@@ -48,7 +49,7 @@ void graph_ops_init()
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    program_id = load_shaders();
+    program_id = load_shaders("source/shaders/color.vert.glsl", "source/shaders/color.frag.glsl");
     matrix_id = glGetUniformLocation(program_id, "u_mvp");
     time_id = glGetUniformLocation(program_id, "u_time");
     color_id = glGetUniformLocation(program_id, "u_color");
@@ -57,6 +58,8 @@ void graph_ops_init()
     models.push_back(Model::from_obj(matrix_id, color_id, "models/link.obj", "Link"));
 
     selected_model = models[0];
+
+    models[0]->texture_from_file(0);
 
     models[0]->color = glm::vec4(1.0f);
     models[0]->move_by(glm::vec3(0.0f, 0.0f, -2.5f));
@@ -117,6 +120,8 @@ void graph_ops_update(double ticks, double dt)
             continue;
         glm::vec3 model_pos = glm::vec3(model->matrix[3].x, model->matrix[3].y, model->matrix[3].z);
         glm::vec3 dir = position - model_pos;
+        if (glm::abs(dir.x) < .1f && glm::abs(dir.z) < .1f)
+            continue;
         dir.y = .0f;
         dir = glm::normalize(dir);
         model->matrix = glm::inverse(glm::lookAt(model_pos, position, up));
@@ -130,9 +135,12 @@ void graph_ops_update(double ticks, double dt)
 
     for (auto model_it = std::begin(models); model_it != models_mid_it; ++model_it)
     {
+        glUseProgram(program_id);
         auto model = *model_it;
         model->draw(view_projection);
     }
+
+    glUseProgram(program_id);
 
     if (models_mid_it != std::end(models))
     {
@@ -159,7 +167,8 @@ void graph_ops_update(double ticks, double dt)
     glUniform4f(color_id, 1.0f, 1.0f, 1.0f, 1.0f);
 
     static Line mouse_ray_line(line_start, line_end);
-    mouse_ray_line.draw();
+    if (draw_boxes)
+        mouse_ray_line.draw();
 
     auto &x = arrows[0];
     auto &y = arrows[1];
@@ -253,7 +262,6 @@ void imgui_update()
     ImGui::SetNextWindowSize(ImVec2(280.0f, 280.0f), ImGuiCond_Once);
     ImGui::Begin("graph-ops");
 
-    static bool draw_boxes = true;
     ImGui::Checkbox("Draw Boxes", &draw_boxes);
     if (draw_boxes)
     {

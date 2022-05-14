@@ -25,7 +25,7 @@ void compile_shader(GLuint shader_id, void *shader_source)
     }
 }
 
-GLuint load_shaders()
+GLuint load_shaders(const char *vertex_path, const char *fragment_path)
 {
     GLuint vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
     GLuint fragment_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
@@ -35,12 +35,12 @@ compile_shader(vertex_shader_id, VERTEX_SHADER_SOURCE);
 compile_shader(fragment_shader_id, FRAGMENT_SHADER_SOURCE);
 #else
     auto vertex_shader_file =
-        open_and_map_file("source/shaders/vert.glsl", IO_READ_ONLY);
+        open_and_map_file(vertex_path, IO_READ_ONLY);
     compile_shader(vertex_shader_id, vertex_shader_file.start);
     UNMAP_AND_CLOSE_FILE(vertex_shader_file);
 
     auto fragment_shader_file =
-        open_and_map_file("source/shaders/frag.glsl", IO_READ_ONLY);
+        open_and_map_file(fragment_path, IO_READ_ONLY);
     compile_shader(fragment_shader_id, fragment_shader_file.start);
     UNMAP_AND_CLOSE_FILE(fragment_shader_file);
 #endif // NDEBUG
