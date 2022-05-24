@@ -112,7 +112,31 @@ void graph_ops_update(double ticks, double dt)
     auto view = glm::lookAt(position, position + direction, up);
     auto view_projection = projection * view;
 
+    // FIXME
+    glm::vec3 prev_position = position;
+
     process_input(position, direction, dt);
+
+    for (auto &model : models)
+    {
+        if (intersect(position - glm::vec3(.0f, .5f, .0f), model->box))
+        {
+            position = prev_position;
+            break;
+        }
+    }
+
+    prev_position = position;
+    position.y -= 1.0f * dt;
+
+    for (auto &model : models)
+    {
+        if (intersect(position - glm::vec3(.0f, .5f, .0f), model->box))
+        {
+            position = prev_position;
+            break;
+        }
+    }
 
     for (auto &model : models)
     {
@@ -120,15 +144,12 @@ void graph_ops_update(double ticks, double dt)
             continue;
         glm::vec3 model_pos = glm::vec3(model->matrix[3].x, model->matrix[3].y, model->matrix[3].z);
         glm::vec3 dir = position - model_pos;
-        if (glm::abs(dir.x) < .1f && glm::abs(dir.z) < .1f)
-            continue;
         dir.y = .0f;
-        dir = glm::normalize(dir);
         model->matrix = glm::inverse(glm::lookAt(model_pos, position, up));
-        model->move_by(dir * 2.0f * (float)dt);
+        if (glm::abs(dir.x) < 1.5f && glm::abs(dir.z) < 1.5f)
+            continue;
+        model->move_by(glm::normalize(dir) * 2.0f * (float)dt);
     }
-
-    position.y -= 5.0f * dt;
 
     if (position.y < 0.0f)
         position.y = 0.0f;
