@@ -201,7 +201,7 @@ Module['FS_createPath']("/source/imgui", "fonts", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/assets/earth.jpg", "start": 0, "end": 200212}, {"filename": "/models/axis_arrow.obj", "start": 200212, "end": 214665}, {"filename": "/models/link.obj", "start": 214665, "end": 223841}, {"filename": "/models/sphere-2.obj", "start": 223841, "end": 297229}, {"filename": "/models/sphere.obj", "start": 297229, "end": 370523}, {"filename": "/source/shaders/color.frag.glsl", "start": 370523, "end": 370676}, {"filename": "/source/shaders/color.vert.glsl", "start": 370676, "end": 370868}, {"filename": "/source/shaders/texture.frag.glsl", "start": 370868, "end": 371063}, {"filename": "/source/shaders/texture.vert.glsl", "start": 371063, "end": 371306}, {"filename": "/source/imgui/fonts/Roboto-Medium.ttf", "start": 371306, "end": 533894}], "remote_package_size": 533894, "package_uuid": "b7e011e2-b78a-49fa-b33f-b9c6e7be2418"});
+    loadPackage({"files": [{"filename": "/assets/earth.jpg", "start": 0, "end": 200212}, {"filename": "/models/axis_arrow.obj", "start": 200212, "end": 214665}, {"filename": "/models/link.obj", "start": 214665, "end": 223841}, {"filename": "/models/sphere.obj", "start": 223841, "end": 297135}, {"filename": "/source/shaders/color.frag.glsl", "start": 297135, "end": 297288}, {"filename": "/source/shaders/color.vert.glsl", "start": 297288, "end": 297480}, {"filename": "/source/shaders/texture.frag.glsl", "start": 297480, "end": 297675}, {"filename": "/source/shaders/texture.vert.glsl", "start": 297675, "end": 297918}, {"filename": "/source/imgui/fonts/Roboto-Medium.ttf", "start": 297918, "end": 460506}], "remote_package_size": 460506, "package_uuid": "f3d15830-4428-45e6-9686-1dbc5045f0c7"});
 
   })();
 
