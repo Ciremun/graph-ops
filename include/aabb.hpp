@@ -22,4 +22,6 @@ struct Box
     void update(AABB const &b);
 };
 
+bool intersect(AABB const &a, AABB const &b);
+bool intersect(glm::vec3 const &point, AABB const &box);
 AABB calc_transformed_bounds(AABB const &b, glm::mat4 const &transform);
