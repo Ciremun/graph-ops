@@ -22,7 +22,7 @@ float horizontal_angle = 3.15f;
 float vertical_angle = -.2f;
 float speed = 5.0f;
 float mouse_speed = 0.1f;
-bool draw_boxes = true;
+bool draw_boxes = false;
 
 glm::highp_mat4 projection;
 std::vector<Model *> models_imgui_draw_order;
@@ -154,6 +154,16 @@ void graph_ops_update(double ticks, double dt)
     if (position.y < 0.0f)
         position.y = 0.0f;
 
+    static Model *bullet = 0;
+    if (!bullet)
+    {
+        bullet = new Model(matrix_id, color_id, models[0]->vertices, models[0]->uvs, models[0]->normals, models[0]->label);
+        bullet->matrix = glm::scale(bullet->matrix, glm::vec3(0.1f, 0.1f, 0.1f));
+        bullet->color = glm::vec4(1.0f, 1.0f ,1.0f, 0.5f);
+    }
+
+    bullet->draw(view_projection);
+
     for (auto model_it = std::begin(models); model_it != models_mid_it; ++model_it)
     {
         glUseProgram(program_id);
@@ -194,6 +204,7 @@ void graph_ops_update(double ticks, double dt)
     auto &x = arrows[0];
     auto &y = arrows[1];
     auto &z = arrows[2];
+
     if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && !ImGui::IsAnyItemActive() && !(x->drag || y->drag || z->drag))
     {
         ImVec2 xy = ImGui::GetMousePos();
@@ -228,6 +239,11 @@ void graph_ops_update(double ticks, double dt)
                 }
             }
         }
+        glm::vec3 bullet_pos(bullet->matrix[3].x, bullet->matrix[3].y, bullet->matrix[3].z);
+        if (glm::abs(glm::length(position - bullet_pos)) > 6.0f)
+            bullet->move_to(position + glm::normalize(casted_ray));
+        else
+            bullet->move_by(casted_ray / 6.0f);
     }
 }
 
